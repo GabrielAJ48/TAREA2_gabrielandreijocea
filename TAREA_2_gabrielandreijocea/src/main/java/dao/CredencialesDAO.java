@@ -17,7 +17,7 @@ public class CredencialesDAO {
 	}
 	
 	public String getPerfil(String nombreUsuario, String contrasenia) {
-		String perfil = "";
+		String perfil = null;
 		String consulta = "SELECT perfil FROM credenciales WHERE nombre_usuario = ? AND password = ?";
 		
 		try {
@@ -27,6 +27,11 @@ public class CredencialesDAO {
 			p.setString(2, contrasenia);
 			
 			rs = p.executeQuery();
+			if (rs.next()) {
+				perfil = rs.getString("perfil"); 
+			}
+			rs.close();
+			p.close();
 		} catch (SQLException e) {
 			
 		}

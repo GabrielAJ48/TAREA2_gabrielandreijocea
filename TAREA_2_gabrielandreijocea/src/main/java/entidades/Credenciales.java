@@ -5,6 +5,7 @@ public class Credenciales {
 	private Long id;
 	private String nombreUsuario;
 	private String password;
+	private String perfil = "INVITADO";
 	
 	public Credenciales() {
 		
@@ -39,6 +40,14 @@ public class Credenciales {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getPerfil() {
+		return perfil;
+	}
+
+	public void setPerfil(String perfil) {
+		this.perfil = perfil;
 	}
 	
 	

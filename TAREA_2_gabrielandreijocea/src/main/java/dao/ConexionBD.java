@@ -7,35 +7,27 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import servicios.Propiedades;
+
 public class ConexionBD {
 
 	private static Connection conexion;
-	private static String URL;
-	private static String usuario;
-	private static String contrasenia;
-
-	static {
-		try (InputStream input = ConexionBD.class.getClassLoader().getResourceAsStream("application.properties")) {
-			if (input == null) {
-				System.out.println("No se encontró el archivo application.properties");
-			} else {
-				Properties props = new Properties();
-				props.load(input);
-
-				URL = props.getProperty("URL");
-				usuario = props.getProperty("Usuario");
-				contrasenia = props.getProperty("contrasenia");
-			}
-		} catch (IOException e) {
-			System.out.println("Error al leer fichero de propiedades");
-		}
-	}
+	private static String URL=Propiedades.get("URL");
+	private static String usuario=Propiedades.get("usuario");
+	private static String contrasenia=Propiedades.get("contrasenia");
 
 	public static Connection getConexion() {
 		try {
+			try {
+				Class.forName("com.mysql.cj.jdbc.Driver");
+			} catch (ClassNotFoundException e) {
+				System.out.println("Driver JDBC no encontrado");
+		        e.printStackTrace();
+			}
 			conexion = DriverManager.getConnection(URL, usuario, contrasenia);
 		} catch (SQLException e) {
-			System.out.println("Error al conectarse a la bbdd");
+			System.out.println("Error al conectarse a la bbdd"+e.getMessage());
+		    e.printStackTrace();
 		}
 		return conexion;
 	}
