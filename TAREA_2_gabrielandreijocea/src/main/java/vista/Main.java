@@ -1,12 +1,9 @@
 package vista;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
-import java.util.Map;
+import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 import entidades.*;
 import servicios.CredencialesService;
@@ -24,7 +21,6 @@ public class Main {
 		System.out.println(credserv.tomarPerfil("andrei", "andrei"));
 		System.out.println(perserv.getNombrePersona("andrei", "andrei"));
 
-		Credenciales cred = new Credenciales();
 		boolean confirmarSalida = false;
 		int op = 0;
 
@@ -61,7 +57,7 @@ public class Main {
 					System.out.println("Introduzca su contraseña:");
 					String contrasenia = leer.nextLine();
 
-					if (credserv.validarCredenciales(nombreUsuario, contrasenia)) {
+					if (credserv.validarCredencialesLogin(nombreUsuario, contrasenia)) {
 						sesiserv.iniciarSesion(nombreUsuario, contrasenia);
 					}
 					break;
@@ -75,8 +71,73 @@ public class Main {
 				break;
 			}
 			
-			case "ADMIN": System.out.println("Eres Admin");
-				break;
+			case "ADMIN": {
+				System.out.println("Escoja una opción:");
+				System.out.println("1. Ver espectáculos");
+				System.out.println("2. Crear nuevo espectáculo");
+				System.out.println("3. Registrar persona");
+				System.out.println("4. Cerrar sesión");
+				System.out.println("5. Salir");
+				op = leer.nextInt();
+				leer.nextLine();
+				try {
+					op = leer.nextInt();
+					leer.nextLine();
+				} catch (InputMismatchException e) {
+					System.out.println("Entrada inválida. Introduzca un número válido.");
+					leer.nextLine();
+					op = -1;
+				}
+
+				switch (op) {
+				case 3: String nombre = "";
+						String email = "";
+						String nacionalidad = "";
+						String validacionPersona = "";
+						String nombreUsuario = "";
+						String contraseña = "";
+						String validacionCred = "";
+						long persona_id = -1;
+						do {
+							System.out.println("Introduzca el nombre de la persona");
+							nombre = leer.nextLine();
+							System.out.println("Introduzca el email");
+							email = leer.nextLine();
+							System.out.println("Introduzca la nacionalidad");
+							nacionalidad = leer.nextLine();
+							
+							validacionPersona = perserv.validarPersona(nombre, email, nacionalidad);
+							
+							if (validacionPersona == null) {
+								persona_id = perserv.insertarPersona(nombre, email, nacionalidad);
+							} else {
+								System.out.println(validacionPersona);
+							}
+						} while (validacionPersona != null);
+						do {
+							System.out.println("Introduzca el nombre de usuario");
+							nombreUsuario = leer.nextLine();
+							System.out.println("Introduzca la contraseña");
+							contraseña = leer.nextLine();
+							
+							validacionCred = credserv.validarCredencialesRegistro(nombreUsuario, contraseña);
+							
+							if (validacionCred == null) {
+								credserv.insertarCredenciales(nombreUsuario, contraseña, persona_id);
+							} else {
+								System.out.println(validacionCred);
+							}	
+						} while (validacionCred != null);
+
+						System.out.println("¿Qué perfil tendrá esta persona?");
+						System.out.println("1. Coordinación");
+						System.out.println("2. Artista");
+
+						
+						break;
+						
+				}
+			}
 			
 			case "COORDINACION": System.out.println("Eres coord");
 				break;

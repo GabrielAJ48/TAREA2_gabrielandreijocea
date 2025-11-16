@@ -52,10 +52,54 @@ public class CredencialesDAO {
 			rs.close();
 			p.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 		return ret;
+	}
+	
+	public boolean existeNombreUsuario(String nombreUsuario) {
+		boolean existe = false;
+		String consulta = "SELECT COUNT(*) FROM credenciales WHERE nombre_usuario = ?";
+		
+		try {
+			p = conex.prepareStatement(consulta);
+			
+			p.setString(1, nombreUsuario);
+			
+			rs = p.executeQuery();
+			
+			rs.next();
+			if(rs.getInt(1) > 0) {
+				existe = true;
+			}
+		} catch (SQLException e) {
+			
+		}
+		
+		return existe;
+	}
+	
+	public int insertarCredenciales(String usuario, String contrasenia, long persona_id) {
+		String insercion = "INSERT INTO credenciales (nombre_usuario, password, persona_id) VALUES (?, ?, ?)";
+		int credencial_id = -1;
+		
+	    try {
+	    	p = conex.prepareStatement(insercion);
+	    	p.setString(1, usuario);
+	        p.setString(2, contrasenia);
+	        p.setLong(3, persona_id);
+	        p.executeUpdate();
+
+	        rs = p.getGeneratedKeys();
+	        if (rs.next()) {
+	            credencial_id = rs.getInt(1);
+	        }
+	    } catch (SQLException e) {
+			
+		}
+
+	    return credencial_id;
 	}
 	
 }
