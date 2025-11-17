@@ -18,7 +18,7 @@ public class PersonaService {
             return "El nombre no puede estar vacío.";
         }
 
-        String patronEmail = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        String patronEmail = "^[\\w.-]+@[\\w.-]+\\.[A-Za-z]{2,6}$";
         if (!email.matches(patronEmail)) {
             return "El email no es válido.";
         }

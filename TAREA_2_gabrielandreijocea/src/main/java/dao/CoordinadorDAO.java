@@ -3,6 +3,7 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 public class CoordinadorDAO {
 
@@ -13,7 +14,7 @@ public class CoordinadorDAO {
         conex = ConexionBD.getConexion();
     }
 
-    public boolean insertarCoordinador(long persona_id, boolean senior, String fechaSenior) {
+    public boolean insertarCoordinador(long persona_id, boolean senior, LocalDate fechaSenior) {
         String sql = "INSERT INTO coordinacion (persona_id, senior, fecha_senior) VALUES (?,?,?)";
 
         try {
@@ -22,7 +23,7 @@ public class CoordinadorDAO {
             p.setBoolean(2, senior);
 
             if (senior) {
-                p.setString(3, fechaSenior);
+                p.setObject(3, fechaSenior);
             } else {
                 p.setNull(3, java.sql.Types.DATE);
             }
