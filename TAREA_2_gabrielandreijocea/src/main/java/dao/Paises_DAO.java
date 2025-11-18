@@ -27,6 +27,8 @@ public class Paises_DAO {
             if (rs.getInt(1) != 0) {
                 existe = true;
             }
+            rs.close();
+			p.close();
         } catch (SQLException e) {
 			
 		}

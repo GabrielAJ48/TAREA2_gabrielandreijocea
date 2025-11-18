@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 public class CredencialesDAO {
 	
@@ -74,6 +73,9 @@ public class CredencialesDAO {
 			if(rs.getInt(1) > 0) {
 				existe = true;
 			}
+			
+			rs.close();
+			p.close();
 		} catch (SQLException e) {
 			
 		}
@@ -81,12 +83,12 @@ public class CredencialesDAO {
 		return existe;
 	}
 	
-	public int insertarCredenciales(String usuario, String contrasenia, long persona_id) {
+	public long insertarCredenciales(String usuario, String contrasenia, long persona_id) {
 		String insercion = "INSERT INTO credenciales (nombre_usuario, password, persona_id) VALUES (?, ?, ?)";
-		int credencial_id = -1;
+		long credencial_id = -1;
 		
 	    try {
-	    	p = conex.prepareStatement(insercion);
+	    	p = conex.prepareStatement(insercion, java.sql.Statement.RETURN_GENERATED_KEYS);
 	    	p.setString(1, usuario);
 	        p.setString(2, contrasenia);
 	        p.setLong(3, persona_id);
@@ -94,13 +96,34 @@ public class CredencialesDAO {
 
 	        rs = p.getGeneratedKeys();
 	        if (rs.next()) {
-	            credencial_id = rs.getInt(1);
+	            credencial_id = rs.getLong(1);
 	        }
+	        
+	        rs.close();
+			p.close();
 	    } catch (SQLException e) {
 			
 		}
 
 	    return credencial_id;
+	}
+	
+	public boolean insertarPerfil(String perfil, long credencial_id) {
+	    boolean ret = false;
+	    String update = "UPDATE credenciales SET perfil = ? WHERE credencial_id = ?";
+
+	    try (PreparedStatement p = conex.prepareStatement(update)) {
+	        p.setString(1, perfil);
+	        p.setLong(2, credencial_id);
+
+	        int filas = p.executeUpdate();
+	        ret = filas > 0; 
+
+	    } catch (SQLException e) {
+	    	
+	    }
+
+	    return ret;
 	}
 	
 }

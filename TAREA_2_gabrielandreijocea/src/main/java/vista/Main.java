@@ -2,9 +2,11 @@ package vista;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import entidades.*;
 import servicios.ArtistaService;
@@ -118,10 +120,12 @@ public class Main {
 							
 							if (validacionPersona == null) {
 								persona_id = perserv.insertarPersona(nombre, email, nacionalidad);
+								System.out.println(persona_id);
 							} else {
 								System.out.println(validacionPersona);
 							}
 						} while (validacionPersona != null);
+						long credencial_id = -1;
 						do {
 							System.out.println("Introduzca el nombre de usuario");
 							nombreUsuario = leer.nextLine();
@@ -131,7 +135,8 @@ public class Main {
 							validacionCred = credserv.validarCredencialesRegistro(nombreUsuario, contraseña);
 							
 							if (validacionCred == null) {
-								credserv.insertarCredenciales(nombreUsuario, contraseña, persona_id);
+								credencial_id = credserv.insertarCredenciales(nombreUsuario, contraseña, persona_id);
+								System.out.println(credencial_id);
 							} else {
 								System.out.println(validacionCred);
 							}	
@@ -152,13 +157,14 @@ public class Main {
 					        }
 
 					    } while (tipo != 1 && tipo != 2);
-
+					    
+					    //COORDINACION
 					    if (tipo == 1) {
-
+					    	credserv.insertarPerfil("COORDINACION", credencial_id);
 					        boolean esSenior = false;
 					        LocalDate fechaSenior = null;
 
-					        String resp = "";
+					        String resp;
 					        do {
 					            System.out.println("¿Es senior? (S/N):");
 					            resp = leer.nextLine().toUpperCase();
@@ -170,11 +176,10 @@ public class Main {
 
 					            boolean fechaOk = false;
 					            do {
-					                System.out.println("Introduzca la fecha (DD/MM/YYYY:");
+					                System.out.println("Introduzca la fecha (DD/MM/YYYY):");
 					                String fecha = leer.nextLine();
 
 					                try {
-					                    
 					                    fechaSenior = LocalDate.parse(fecha, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 					                    fechaOk = true;
 
@@ -193,9 +198,10 @@ public class Main {
 					            System.out.println("Coordinador registrado correctamente.");
 					        }
 					    }
-
+					    
+					    //ARTISTA
 					    if (tipo == 2) {
-  
+					    	credserv.insertarPerfil("ARTISTA", credencial_id);
 					        String resp = "";
 					        String apodo = null;
 
@@ -209,8 +215,8 @@ public class Main {
 					            System.out.println("Introduzca el apodo:");
 					            apodo = leer.nextLine();
 					        }
-
-					        List<String> especialidades = null;
+					        long artista_id = artServ.insertarArtista(persona_id, apodo);
+					        Set<String> especialidades = null;
 					        boolean valido = false;
 
 					        do {
@@ -221,7 +227,7 @@ public class Main {
 
 					            String[] partes = linea.split(",");
 
-					            especialidades = new java.util.ArrayList<>();
+					            especialidades = new HashSet<String>();
 
 					            for (String e : partes) {
 					                e = e.trim();
@@ -241,17 +247,16 @@ public class Main {
 
 					        } while (!valido);
 
-					        String err = artServ.registrarArtista(persona_id, apodo, especialidades);
+					        String error = artServ.registrarArtista(persona_id, apodo, especialidades);
 
-					        if (err != null) {
-					            System.out.println(err);
+					        if (error != null) {
+					            System.out.println(error);
 					        } else {
 					            System.out.println("Artista registrado correctamente.");
 					        }
 					    }
-
-					    break;
 					}
+				break;
 				}
 			
 			case "COORDINACION": System.out.println("Eres coord");

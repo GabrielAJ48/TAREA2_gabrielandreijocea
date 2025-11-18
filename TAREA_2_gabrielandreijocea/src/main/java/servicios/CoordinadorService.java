@@ -14,9 +14,9 @@ public class CoordinadorService {
             return "Debe introducir una fecha válida para un coordinador senior.";
         }
 
-        boolean ok = coordDAO.insertarCoordinador(persona_id, senior, fecha);
+        long ok = coordDAO.insertarCoordinador(persona_id, senior, fecha);
 
-        if (!ok) {
+        if (ok == -1) {
             return "Error al insertar el coordinador en la base de datos.";
         }
 

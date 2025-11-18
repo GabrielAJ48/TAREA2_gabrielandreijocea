@@ -30,6 +30,8 @@ public class PersonaDAO {
 			if (rs.next()) {
 				nombrePersona = rs.getString("nombre");
 			}
+			rs.close();
+			p.close();
 		} catch (SQLException e) {
 			
 		}
@@ -61,31 +63,15 @@ public class PersonaDAO {
 	
 	public long insertarPersona(String nombre, String email, String nacionalidad) {
 		long persona_id = -1;
-		String pais = "";
-		String consulta_nacionalidad = "SELECT nombre_pais FROM paises WHERE pais_id = ?";
+		
+		String insercion = "INSERT INTO persona (nombre, email, pais_id) VALUES (?,?,?)";
 		
 		try {
-			p = conex.prepareStatement(consulta_nacionalidad);
-			
-			p.setString(1, nacionalidad);
-			
-			rs = p.executeQuery();
-			
-			if(rs.next()) {
-				pais = rs.getString("nombre_pais");
-			}
-		} catch (SQLException e) {
-			
-		}
-		
-		String insercion = "INSERT INTO persona (nombre, email, nacionalidad) VALUES (?,?,?)";
-		
-		try {
-			p = conex.prepareStatement(insercion);
+			p = conex.prepareStatement(insercion, java.sql.Statement.RETURN_GENERATED_KEYS);
 			
 			p.setString(1, nombre);
 			p.setString(2, email);
-			p.setString(3, pais);
+			p.setString(3, nacionalidad);
 			
 			p.executeUpdate();
 			
@@ -94,6 +80,8 @@ public class PersonaDAO {
 			if(rs.next()) {
 				persona_id = rs.getLong(1);
 			}
+			rs.close();
+			p.close();
 		} catch (SQLException e) {
 			
 		}
@@ -114,6 +102,8 @@ public class PersonaDAO {
             if (rs.getInt(1) > 0) {
                 existe = true;
             }
+            rs.close();
+			p.close();
 		} catch (SQLException e) {
 			
 		}

@@ -54,8 +54,12 @@ public class CredencialesService {
 	    return null;
 	}
 	
-	public int insertarCredenciales(String nombreUsuario, String contrasenia, long persona_id) {
+	public long insertarCredenciales(String nombreUsuario, String contrasenia, long persona_id) {
 		return cred_dao.insertarCredenciales(nombreUsuario, contrasenia, persona_id);
+	}
+	
+	public boolean insertarPerfil(String perfil, long credencial_id) {
+		return cred_dao.insertarPerfil(perfil, credencial_id);
 	}
 
 }

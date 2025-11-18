@@ -2,22 +2,24 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ArtistaDAO {
 
     private Connection conex;
     private PreparedStatement p;
+    private ResultSet rs;
 
     public ArtistaDAO() {
         conex = ConexionBD.getConexion();
     }
 
-    public boolean insertarArtista(long persona_id, String apodo) {
-        String sql = "INSERT INTO artista (persona_id, apodo) VALUES (?,?)";
-
+    public long insertarArtista(long persona_id, String apodo) {
+        String insert = "INSERT INTO artista (persona_id, apodo) VALUES (?,?)";
+        long artista_id = -1;
         try {
-            p = conex.prepareStatement(sql);
+            p = conex.prepareStatement(insert, java.sql.Statement.RETURN_GENERATED_KEYS);
             p.setLong(1, persona_id);
 
             if (apodo == null) {
@@ -25,26 +27,47 @@ public class ArtistaDAO {
             } else {
                 p.setString(2, apodo);
             }
-
             p.executeUpdate();
-            p.close();
-            return true;
-
+            rs = p.getGeneratedKeys();
+	        if (rs.next()) {
+	            artista_id = rs.getLong(1);
+	        }
+	        
+	        rs.close();
+			p.close();
         } catch (SQLException e) {
-            return false;
+            
         }
+        return artista_id;
     }
+    
+    public long obtenerIdEspecialidad(String nombreEspecialidad) {
+        String consulta = "SELECT especialidad_id FROM especialidad WHERE nombre = ?";
+        
+        try {
+        	p = conex.prepareStatement(consulta);
+            p.setString(1, nombreEspecialidad);
+            rs = p.executeQuery();
 
-    public boolean insertarEspecialidad(long persona_id, String especialidad) {
-        String sql = "INSERT INTO habilidades_artista (persona_id, habilidad) VALUES (?,?)";
+            if (rs.next()) {
+                return rs.getLong("especialidad_id");
+            }
+            
+        } catch (SQLException e) {
+            
+        }
+        return -1; 
+    }
+    
+    public boolean insertarArtistaEspecialidad(long artistaPersonaId, long especialidadId) {
+        String insert = "INSERT INTO artista_especialidad (artista_id, especialidad_id) VALUES (?, ?)";
 
         try {
-            p = conex.prepareStatement(sql);
-            p.setLong(1, persona_id);
-            p.setString(2, especialidad);
+        	p = conex.prepareStatement(insert);
+            p.setLong(1, artistaPersonaId); 
+            p.setLong(2, especialidadId);
 
             p.executeUpdate();
-            p.close();
             return true;
 
         } catch (SQLException e) {
