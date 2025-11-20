@@ -59,13 +59,17 @@ public class ArtistaDAO {
         return -1; 
     }
     
-    public boolean insertarArtistaEspecialidad(long artistaPersonaId, long especialidadId) {
+    public boolean insertarArtistaEspecialidad(long artista_id, String especialidad) {
+    	boolean ret = false;
+    	
+    	long especialidad_id = obtenerIdEspecialidad(especialidad);
+    	
         String insert = "INSERT INTO artista_especialidad (artista_id, especialidad_id) VALUES (?, ?)";
 
         try {
         	p = conex.prepareStatement(insert);
-            p.setLong(1, artistaPersonaId); 
-            p.setLong(2, especialidadId);
+            p.setLong(1, artista_id); 
+            p.setLong(2, especialidad_id);
 
             p.executeUpdate();
             return true;

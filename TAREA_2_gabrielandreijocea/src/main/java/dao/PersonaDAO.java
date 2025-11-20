@@ -33,30 +33,7 @@ public class PersonaDAO {
 			rs.close();
 			p.close();
 		} catch (SQLException e) {
-			
-		}
-		return nombrePersona;
-	}
-	
-	public String getNombrePersona(long id_persona) {
-		
-		String nombrePersona= null;
-		String consulta = "SELECT nombre FROM persona WHERE persona_id = ?";
-		
-		try {
-			p = conex.prepareStatement(consulta);
-			
-			p.setLong(1, id_persona);
-			
-			rs = p.executeQuery();
-			if (rs.next()) {
-				nombrePersona = rs.getString("nombre");
-			}
-			
-			rs.close();
-			p.close();
-		} catch (SQLException e) {
-			
+			nombrePersona = "Error al buscar el nombre en la base de datos";
 		}
 		return nombrePersona;
 	}

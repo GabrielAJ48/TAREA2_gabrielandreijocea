@@ -1,12 +1,11 @@
 package servicios;
 
-import dao.Paises_DAO;
 import dao.PersonaDAO;
+import utilidades.GestorNacionalidades;
 
 public class PersonaService {
 
 	private PersonaDAO pers_dao = new PersonaDAO();
-	private Paises_DAO paises_dao = new Paises_DAO();
 	
 	public String getNombrePersona(String nombreUsuario, String contrasenia) {
 		return pers_dao.getNombrePersona(nombreUsuario, contrasenia);
@@ -27,8 +26,8 @@ public class PersonaService {
         	return "El email ya está registrado.";
         }
 
-        if (!paises_dao.existePais(nacionalidad)) {
-            return "La nacionalidad introducida no existe.";
+        if (!GestorNacionalidades.comprobarNacionalidad(nacionalidad)) {
+            return "La nacionalidad introducida no existe en el XML.";
         }
 
         return null;

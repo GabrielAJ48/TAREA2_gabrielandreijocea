@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import servicios.Propiedades;
+import utilidades.Propiedades;
 
 public class ConexionBD {
 

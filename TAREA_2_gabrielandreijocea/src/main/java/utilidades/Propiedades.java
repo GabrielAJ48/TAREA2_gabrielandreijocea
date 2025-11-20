@@ -1,4 +1,4 @@
-package servicios;
+package utilidades;
 
 import java.io.IOException;
 import java.io.InputStream;

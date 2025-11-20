@@ -1,6 +1,7 @@
 package servicios;
 
 import dao.CredencialesDAO;
+import utilidades.Propiedades;
 
 public class CredencialesService {
 

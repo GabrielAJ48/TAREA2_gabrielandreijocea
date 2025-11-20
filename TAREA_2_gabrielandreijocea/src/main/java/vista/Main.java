@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -14,19 +15,19 @@ import servicios.CoordinadorService;
 import servicios.CredencialesService;
 import servicios.PersonaService;
 import servicios.SesionService;
+import utilidades.GestorNacionalidades;
+import utilidades.Propiedades;
 
 public class Main {
 
 	public static void main(String[] args) {
+		GestorNacionalidades.cargarPaises(Propiedades.get("ficheronacionalidades"));
 		Scanner leer = new Scanner(System.in);
-		CredencialesService credserv = new CredencialesService();
-		PersonaService perserv = new PersonaService();
-		SesionService sesiserv = new SesionService();
+		CredencialesService credServ = new CredencialesService();
+		PersonaService perServ = new PersonaService();
+		SesionService sesiServ = new SesionService();
 		CoordinadorService coordServ = new CoordinadorService();
 		ArtistaService artServ = new ArtistaService();
-		
-		System.out.println(credserv.tomarPerfil("andrei", "andrei"));
-		System.out.println(perserv.getNombrePersona("andrei", "andrei"));
 
 		boolean confirmarSalida = false;
 		int op = 0;
@@ -46,8 +47,8 @@ public class Main {
 				System.out.println("3. Salir");
 				
 				try {
+					leer = new Scanner(System.in);
 					op = leer.nextInt();
-					leer.nextLine();
 				} catch (InputMismatchException e) {
 					System.out.println("Entrada inválida. Introduzca un número válido.");
 					leer.nextLine();
@@ -60,12 +61,14 @@ public class Main {
 					break;
 				case 2:
 					System.out.println("Introduzca su nombre de usuario:");
+					leer = new Scanner(System.in);
 					String nombreUsuario = leer.nextLine();
 					System.out.println("Introduzca su contraseña:");
+					leer = new Scanner(System.in);
 					String contrasenia = leer.nextLine();
 
-					if (credserv.validarCredencialesLogin(nombreUsuario, contrasenia)) {
-						sesiserv.iniciarSesion(nombreUsuario, contrasenia);
+					if (credServ.validarCredencialesLogin(nombreUsuario, contrasenia)) {
+						sesiServ.iniciarSesion(nombreUsuario, contrasenia);
 					}
 					break;
 				case 3:
@@ -87,10 +90,10 @@ public class Main {
 				System.out.println("5. Salir");
 				leer = new Scanner(System.in);
 				try {
+					leer = new Scanner(System.in);
 					op = leer.nextInt();
 				} catch (InputMismatchException e) {
 					System.out.println("Entrada inválida. Introduzca un número válido.");
-					leer.nextLine();
 					op = -1;
 				}
 
@@ -106,20 +109,23 @@ public class Main {
 						do {
 							System.out.println("Introduzca el nombre de la persona");
 							leer = new Scanner(System.in);
-							nombre = leer.nextLine();
+							nombre = leer.nextLine().trim();
 							
 							System.out.println("Introduzca el email");
 							leer = new Scanner(System.in);
-							email = leer.nextLine();
+							email = leer.nextLine().trim();
 							
-							System.out.println("Introduzca la nacionalidad");
-							leer = new Scanner(System.in);
-							nacionalidad = leer.nextLine();
+							System.out.println("Lista de países:");
+						    Map<String,String> listaPaises = GestorNacionalidades.listaPaises();
+						    listaPaises.forEach((id, nombrePais) -> System.out.println(id+" - "+nombrePais));
+						    System.out.println("Introduzca el ID del país de la persona (Ej: ES):");
+						    leer = new Scanner(System.in);
+						    nacionalidad = leer.nextLine().trim().toUpperCase();
 							
-							validacionPersona = perserv.validarPersona(nombre, email, nacionalidad);
+							validacionPersona = perServ.validarPersona(nombre, email, nacionalidad);
 							
 							if (validacionPersona == null) {
-								persona_id = perserv.insertarPersona(nombre, email, nacionalidad);
+								persona_id = perServ.insertarPersona(nombre, email, nacionalidad);
 								System.out.println(persona_id);
 							} else {
 								System.out.println(validacionPersona);
@@ -128,14 +134,16 @@ public class Main {
 						long credencial_id = -1;
 						do {
 							System.out.println("Introduzca el nombre de usuario");
-							nombreUsuario = leer.nextLine();
+							leer = new Scanner(System.in);
+							nombreUsuario = leer.nextLine().trim();
 							System.out.println("Introduzca la contraseña");
-							contraseña = leer.nextLine();
+							leer = new Scanner(System.in);
+							contraseña = leer.nextLine().trim();
 							
-							validacionCred = credserv.validarCredencialesRegistro(nombreUsuario, contraseña);
+							validacionCred = credServ.validarCredencialesRegistro(nombreUsuario, contraseña);
 							
 							if (validacionCred == null) {
-								credencial_id = credserv.insertarCredenciales(nombreUsuario, contraseña, persona_id);
+								credencial_id = credServ.insertarCredenciales(nombreUsuario, contraseña, persona_id);
 								System.out.println(credencial_id);
 							} else {
 								System.out.println(validacionCred);
@@ -160,7 +168,7 @@ public class Main {
 					    
 					    //COORDINACION
 					    if (tipo == 1) {
-					    	credserv.insertarPerfil("COORDINACION", credencial_id);
+					    	credServ.insertarPerfil("COORDINACION", credencial_id);
 					        boolean esSenior = false;
 					        LocalDate fechaSenior = null;
 
@@ -201,59 +209,53 @@ public class Main {
 					    
 					    //ARTISTA
 					    if (tipo == 2) {
-					    	credserv.insertarPerfil("ARTISTA", credencial_id);
+					    	credServ.insertarPerfil("ARTISTA", credencial_id);
 					        String resp = "";
 					        String apodo = null;
-
+					        
+					        leer = new Scanner(System.in);
 					        do {
 					            System.out.println("¿Tiene apodo? (S/N):");
 					            resp = leer.nextLine().toUpperCase();
-
 					        } while (!resp.equals("S") && !resp.equals("N"));
 
 					        if (resp.equals("S")) {
 					            System.out.println("Introduzca el apodo:");
+					            leer = new Scanner(System.in);
 					            apodo = leer.nextLine();
 					        }
+					        
 					        long artista_id = artServ.insertarArtista(persona_id, apodo);
-					        Set<String> especialidades = null;
+					        
+					        Set<String> especialidades = new HashSet<>();
 					        boolean valido = false;
 
 					        do {
 					            System.out.println("Introduzca las especialidades (separadas por coma):");
 					            System.out.println("Opciones: ACROBACIA, HUMOR, MAGIA, EQUILIBRISMO, MALABARISMO");
 
-					            String linea = leer.nextLine().toUpperCase();
+					            String especialidadesStr = leer.nextLine().toUpperCase().trim();
 
-					            String[] partes = linea.split(",");
-
-					            especialidades = new HashSet<String>();
+					            String[] partes = especialidadesStr.split(",");
 
 					            for (String e : partes) {
-					                e = e.trim();
-
-					                if (e.matches("ACROBACIA|HUMOR|MAGIA|EQUILIBRISMO|MALABARISMO")) {
+					            	if (!e.isEmpty()) {
 					                    especialidades.add(e);
-					                } else {
-					                    System.out.println("Habilidad incorrecta: " + e);
-					                    especialidades.clear();
-					                    break;
 					                }
 					            }
+					            
+					            Set<String> error = artServ.validarEspecialidades(especialidades);
 
-					            if (!especialidades.isEmpty()) {
-					                valido = true;
+					            if (error != null) {
+					            	System.out.println("Errores:");
+					                error.forEach(err -> System.out.println(err));
+					                especialidades.clear();
+					            } else {
+					            	valido = true;
+					            	boolean insertarEspecialidades = artServ.insertarEspecialidades(artista_id, especialidades);
+					            	System.out.println("Artista registrado correctamente");
 					            }
-
 					        } while (!valido);
-
-					        String error = artServ.registrarArtista(persona_id, apodo, especialidades);
-
-					        if (error != null) {
-					            System.out.println(error);
-					        } else {
-					            System.out.println("Artista registrado correctamente.");
-					        }
 					    }
 					}
 				break;

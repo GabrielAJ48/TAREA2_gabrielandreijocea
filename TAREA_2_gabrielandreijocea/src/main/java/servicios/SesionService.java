@@ -3,6 +3,7 @@ package servicios;
 import dao.CredencialesDAO;
 import dao.PersonaDAO;
 import entidades.Sesion;
+import utilidades.Propiedades;
 
 public class SesionService {
 
@@ -12,7 +13,7 @@ public class SesionService {
 	public boolean iniciarSesion(String usuario, String contrasenia) {
 		boolean ok = false;
 		
-		if (usuario.equals(Propiedades.get("usuarioAdmin")) && contrasenia.equals(Propiedades.get("contraseniaAdmin"))) {
+		if (usuario.equals(Propiedades.get("usuarioAdmin")) && contrasenia.equals(Propiedades.get("passwordAdmin"))) {
 			Sesion.setNombre("Administrador");
 			Sesion.setPerfil("ADMIN");
 		} else {
