@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import entidades.Artista;
+
 public class ArtistaDAO {
 
     private Connection conex;
@@ -72,10 +74,94 @@ public class ArtistaDAO {
             p.setLong(2, especialidad_id);
 
             p.executeUpdate();
-            return true;
+            ret = true;
 
+        } catch (SQLException e) {
+            
+        }
+        
+        return ret;
+    }
+    
+    public Artista obtenerArtistaPorPersonaId(long personaId) {
+        Artista a = null;
+        String consulta = "SELECT persona_id, artista_id, apodo FROM artista WHERE persona_id = ?";
+        try {
+            p = conex.prepareStatement(consulta);
+            p.setLong(1, personaId);
+            rs = p.executeQuery();
+            if (rs.next()) {
+                a = new Artista();
+                a.setId(rs.getLong("persona_id"));
+                a.setIdArt(rs.getLong("artista_id"));
+                a.setApodo(rs.getString("apodo"));
+            }
+            if (rs != null) rs.close();
+            if (p != null) p.close();
+        } catch (SQLException e) { }
+        return a;
+    }
+
+    public java.util.Set<String> obtenerEspecialidadesPorArtista(long artistaPersonaId) {
+        java.util.Set<String> set = new java.util.HashSet<>();
+        String consulta = "SELECT e.nombre FROM artista_especialidad ae JOIN especialidad e ON ae.especialidad_id = e.especialidad_id WHERE ae.artista_id = ?";
+        try {
+            p = conex.prepareStatement(consulta);
+            p.setLong(1, artistaPersonaId);
+            rs = p.executeQuery();
+            while (rs.next()) {
+                set.add(rs.getString("nombre"));
+            }
+            if (rs != null) rs.close();
+            if (p != null) p.close();
+        } catch (SQLException e) { }
+        return set;
+    }
+
+    public boolean eliminarEspecialidades(long artistaPersonaId) {
+        boolean ok = false;
+        String delete = "DELETE FROM artista_especialidad WHERE artista_id = ?";
+        try {
+            p = conex.prepareStatement(delete);
+            p.setLong(1, artistaPersonaId);
+            int filas = p.executeUpdate();
+            ok = filas >= 0;
+            p.close();
+        } catch (SQLException e) {
+            ok = false;
+        }
+        return ok;
+    }
+
+    public boolean eliminarEspecialidadPorNombre(long artistaPersonaId, String especialidadNombre) {
+        long idEsp = obtenerIdEspecialidad(especialidadNombre);
+        if (idEsp == -1) return false;
+        String delete = "DELETE FROM artista_especialidad WHERE artista_id = ? AND especialidad_id = ?";
+        try {
+            p = conex.prepareStatement(delete);
+            p.setLong(1, artistaPersonaId);
+            p.setLong(2, idEsp);
+            int filas = p.executeUpdate();
+            p.close();
+            return filas > 0;
         } catch (SQLException e) {
             return false;
         }
+    }
+
+    public boolean actualizarApodo(long artistaPersonaId, String apodo) {
+        boolean ok = false;
+        String update = "UPDATE artista SET apodo = ? WHERE persona_id = ?";
+        try {
+            p = conex.prepareStatement(update);
+            p.setString(1, apodo);
+            p.setLong(2, artistaPersonaId);
+            int filas = p.executeUpdate();
+            ok = filas > 0;
+            p.close();
+        } catch (SQLException e) { 
+        	ok = false; 
+        }
+        return ok;
     }
 }

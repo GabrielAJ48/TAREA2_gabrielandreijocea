@@ -125,5 +125,26 @@ public class CredencialesDAO {
 
 	    return ret;
 	}
+
+	public String getPerfil(long persona_idMod) {
+		String perfil = null;
+		String consulta = "SELECT perfil FROM credenciales WHERE persona_id = ?";
+		
+		try {
+			p = conex.prepareStatement(consulta);
+			
+			p.setLong(1, persona_idMod);
+			
+			rs = p.executeQuery();
+			if (rs.next()) {
+				perfil = rs.getString("perfil"); 
+			}
+			rs.close();
+			p.close();
+		} catch (SQLException e) {
+			
+		}
+		return perfil;
+	}
 	
 }

@@ -2,6 +2,7 @@ package vista;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -13,6 +14,7 @@ import entidades.*;
 import servicios.ArtistaService;
 import servicios.CoordinadorService;
 import servicios.CredencialesService;
+import servicios.EspectaculoService;
 import servicios.PersonaService;
 import servicios.SesionService;
 import utilidades.GestorNacionalidades;
@@ -23,24 +25,26 @@ public class Main {
 	public static void main(String[] args) {
 		GestorNacionalidades.cargarPaises(Propiedades.get("ficheronacionalidades"));
 		Scanner leer = new Scanner(System.in);
+		Sesion sesion = new Sesion();
 		CredencialesService credServ = new CredencialesService();
 		PersonaService perServ = new PersonaService();
 		SesionService sesiServ = new SesionService();
 		CoordinadorService coordServ = new CoordinadorService();
 		ArtistaService artServ = new ArtistaService();
+		EspectaculoService espServ = new EspectaculoService();
 
 		boolean confirmarSalida = false;
 		int op = 0;
 
 		do {
 			System.out.println("======================================");
-			System.out.println("Usuario: " + Sesion.getNombre());
-			System.out.println("Perfil: " + Sesion.getPerfil());
+			System.out.println("Usuario: " + sesion.getNombre());
+			System.out.println("Perfil: " + sesion.getPerfil());
 			System.out.println("======================================");
 
-			switch (Sesion.getPerfil()) {
+			switch (sesion.getPerfil()) {
 
-			case "INVITADO": {
+			case INVITADO: {
 				System.out.println("Escoja una opción:");
 				System.out.println("1. Ver espectáculos");
 				System.out.println("2. Iniciar sesión");
@@ -57,8 +61,23 @@ public class Main {
 
 				switch (op) {
 				case 1:
-					
-					break;
+					List<Espectaculo> espectaculos = espServ.obtenerEspectaculos();
+
+			    if (espectaculos.isEmpty()) {
+			        System.out.println("No hay espectáculos registrados.");
+			    } else {
+			        System.out.println("====== LISTA DE ESPECTÁCULOS ======");
+
+			        for (Espectaculo e : espectaculos) {
+			            System.out.println("ID: " + e.getId());
+			            System.out.println("Nombre: " + e.getNombre());
+			            System.out.println("Fecha Inicio: " + e.getFechaInicio());
+			            System.out.println("Fecha Fin: " + e.getFechaFin());
+			            System.out.println("---------------------------------");
+			        }
+			    }
+			    break;
+			    
 				case 2:
 					System.out.println("Introduzca su nombre de usuario:");
 					leer = new Scanner(System.in);
@@ -68,11 +87,20 @@ public class Main {
 					String contrasenia = leer.nextLine();
 
 					if (credServ.validarCredencialesLogin(nombreUsuario, contrasenia)) {
-						sesiServ.iniciarSesion(nombreUsuario, contrasenia);
+						sesiServ.iniciarSesion(nombreUsuario, contrasenia, sesion);
 					}
 					break;
 				case 3:
-					confirmarSalida = true;
+					String confirmacion = "";
+					leer = new Scanner(System.in);
+				do {
+					System.out.println("¿Está seguro que desea salir? (S/N)");
+					confirmacion = leer.nextLine().toUpperCase().trim();
+				} while (!confirmacion.equals("S") || !confirmacion.equals("N"));
+					if (confirmacion.equals("S")) {
+						System.out.println("Adios!!");
+						confirmarSalida = true;
+					}
 					break;
 				default:
 					System.out.println("Escoja una opción válida (1-3)");
@@ -81,13 +109,14 @@ public class Main {
 				break;
 			}
 			
-			case "ADMIN": {
+			case ADMIN: {
 				System.out.println("Escoja una opción:");
-				System.out.println("1. Ver espectáculos");
+				System.out.println("1. Ver espectáculos completos");
 				System.out.println("2. Crear nuevo espectáculo");
 				System.out.println("3. Registrar persona");
-				System.out.println("4. Cerrar sesión");
-				System.out.println("5. Salir");
+				System.out.println("4. Modificar datos de personas");
+				System.out.println("5. Cerrar sesión");
+				System.out.println("6. Salir");
 				leer = new Scanner(System.in);
 				try {
 					leer = new Scanner(System.in);
@@ -98,6 +127,11 @@ public class Main {
 				}
 
 				switch (op) {
+				
+				case 1:
+					
+				case 2: 
+					
 				case 3: String nombre = "";
 						String email = "";
 						String nacionalidad = "";
@@ -172,7 +206,8 @@ public class Main {
 					        boolean esSenior = false;
 					        LocalDate fechaSenior = null;
 
-					        String resp;
+					        String resp = "";
+					        leer = new Scanner(System.in);
 					        do {
 					            System.out.println("¿Es senior? (S/N):");
 					            resp = leer.nextLine().toUpperCase();
@@ -257,14 +292,281 @@ public class Main {
 					            }
 					        } while (!valido);
 					    }
-					}
+					    break;
+					    
+				case 4:
+				    boolean finModificacion = false;
+				    int opMod = 0;
+				    long persona_idMod = 0;
+				    Perfiles perfilMod = null;
+
+				    System.out.println("Lista de personas:");
+				    Map<Long, String> listaPersonas = perServ.getListaPersonas();
+				    System.out.println("ID - Nombre");
+				    listaPersonas.forEach((idp, nom) -> System.out.println(idp + " - " + nom));
+
+				    System.out.println("Introduzca el ID de la persona que desea modificar:");
+				    leer = new Scanner(System.in);
+				    persona_idMod = leer.nextLong();
+
+				    if (!perServ.existePersona(persona_idMod)) {
+				        System.out.println("No existe ninguna persona con ese ID.");
+				        break;
+				    }
+
+				    perfilMod = credServ.tomarPerfil(persona_idMod);
+
+				    do {
+				        System.out.println("====== MODIFICAR PERSONA ======");
+				        System.out.println("1. Modificar datos personales");
+				        System.out.println("2. Modificar datos profesionales");
+				        System.out.println("3. Volver al menú anterior");
+
+				        leer = new Scanner(System.in);
+
+				        try {
+				            opMod = leer.nextInt();
+				        } catch (InputMismatchException e) {
+				            System.out.println("Ingrese un número válido.");
+				            opMod = -1;
+				        }
+
+				        switch (opMod) {
+				        
+				        case 1:
+				            boolean finModPers = false;
+
+				            while (!finModPers) {
+				                System.out.println("---- Datos personales ----");
+				                System.out.println("1. Modificar nombre");
+				                System.out.println("2. Modificar email");
+				                System.out.println("3. Modificar nacionalidad");
+				                System.out.println("4. Volver");
+
+				                leer = new Scanner(System.in);
+				                int opModPers = leer.nextInt();
+				                leer.nextLine();
+
+				                switch (opModPers) {
+
+				                case 1:
+				                    System.out.println("Introduzca el nuevo nombre:");
+				                    String newNombre = leer.nextLine().trim();
+				                    String errNom = perServ.modificarNombre(persona_idMod, newNombre);
+				                    if (errNom == null)
+				                        System.out.println("Nombre actualizado correctamente.");
+				                    else
+				                        System.out.println(errNom);
+				                    break;
+
+				                case 2:
+				                    System.out.println("Introduzca el nuevo email:");
+				                    String newEmail = leer.nextLine().trim();
+				                    String errEmail = perServ.modificarEmail(persona_idMod, newEmail);
+				                    if (errEmail == null)
+				                        System.out.println("Email actualizado correctamente.");
+				                    else
+				                        System.out.println(errEmail);
+				                    break;
+
+				                case 3:
+				                    System.out.println("Lista de países:");
+				                    GestorNacionalidades.listaPaises()
+				                        .forEach((idp, nom) -> System.out.println(idp + " - " + nom));
+
+				                    System.out.println("Introduzca el ID del país:");
+				                    String newPais = leer.nextLine().trim().toUpperCase();
+
+				                    String errPais = perServ.modificarNacionalidad(persona_idMod, newPais);
+				                    if (errPais == null)
+				                        System.out.println("Nacionalidad actualizada correctamente.");
+				                    else
+				                        System.out.println(errPais);
+				                    break;
+
+				                case 4:
+				                    finModPers = true;
+				                    break;
+
+				                default:
+				                    System.out.println("Opción inválida");
+				                }
+				            }
+				            break;
+
+				        case 2:
+				            if (perfilMod.equals(Perfiles.COORDINACION)) {
+
+				                boolean finModCoord = false;
+
+				                while (!finModCoord) {
+				                    System.out.println("---- Datos de coordinación ----");
+				                    System.out.println("1. Gestionar espectáculos que coordina");
+				                    System.out.println("2. Marcar como senior");
+				                    System.out.println("3. Volver");
+
+				                    leer = new Scanner(System.in);
+				                    int opModCoord = leer.nextInt();
+				                    leer.nextLine();
+
+				                    switch (opModCoord) {
+
+				                    case 1:
+				                        System.out.println("Espectáculos actuales del coordinador:");
+				                        Map<Long, String> actuales = coordServ.obtenerEspectaculosQueCoordina(persona_idMod);
+				                        actuales.forEach((idE, nom) -> System.out.println(idE + " - " + nom));
+
+				                        System.out.println("Escoja acción:");
+				                        System.out.println("1. Añadir espectáculo");
+				                        System.out.println("2. Quitar espectáculo");
+
+				                        int opEsp = leer.nextInt();
+				                        leer.nextLine();
+
+				                        if (opEsp == 1) {
+				                            System.out.println("Todos los espectáculos disponibles:");
+				                            Map<Long, String> todos = coordServ.obtenerTodosEspectaculos();
+				                            todos.forEach((idE, nom) -> System.out.println(idE + " - " + nom));
+				                            System.out.println("Introduzca ID del espectáculo a asignar:");
+				                            long idAsign = leer.nextLong();
+
+				                            String res = coordServ.asignarCoordinacion(idAsign, persona_idMod);
+				                            if (res == null) System.out.println("Asignado correctamente.");
+				                            else System.out.println(res);
+
+				                        } else if (opEsp == 2) {
+				                            System.out.println("Introduzca ID del espectáculo a quitar:");
+				                            long idQuit = leer.nextLong();
+
+				                            String res = coordServ.quitarCoordinacion(idQuit);
+				                            if (res == null) System.out.println("Quitado correctamente.");
+				                            else System.out.println(res);
+
+				                        } else {
+				                            System.out.println("Opción inválida.");
+				                        }
+				                        break;
+
+				                    case 2:
+				                        System.out.println("Introduzca fecha senior (dd/MM/yyyy):");
+				                        String fechaStr = leer.nextLine();
+				                        try {
+				                            LocalDate fechaS = LocalDate.parse(fechaStr,
+				                                    DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+				                            String res = coordServ.marcarComoSenior(persona_idMod, fechaS);
+				                            System.out.println(res == null ? "Actualizado correctamente." : res);
+
+				                        } catch (Exception e) {
+				                            System.out.println("Formato incorrecto.");
+				                        }
+				                        break;
+
+				                    case 3:
+				                        finModCoord = true;
+				                        break;
+
+				                    default:
+				                        System.out.println("Opción inválida");
+				                    }
+				                }
+
+				            } else {
+
+				                boolean finModArt = false;
+
+				                while (!finModArt) {
+				                    System.out.println("---- Datos de artista ----");
+				                    System.out.println("1. Modificar apodo");
+				                    System.out.println("2. Gestionar especialidades");
+				                    System.out.println("3. Volver");
+
+				                    leer = new Scanner(System.in);
+				                    int opModArt = leer.nextInt();
+				                    leer.nextLine();
+
+				                    switch (opModArt) {
+
+				                    case 1:
+				                        System.out.println("Introduzca nuevo apodo:");
+				                        String newApo = leer.nextLine().trim();
+				                        String resApo = artServ.modificarApodo(persona_idMod, newApo);
+				                        System.out.println(resApo == null ? "Apodo actualizado." : resApo);
+				                        break;
+
+				                    case 2:
+				                        System.out.println("Especialidades actuales:");
+				                        artServ.listarEspecialidades(persona_idMod)
+				                                .forEach(e -> System.out.println("- " + e));
+
+				                        System.out.println("Opciones:");
+				                        System.out.println("1. Añadir especialidad");
+				                        System.out.println("2. Quitar especialidad");
+
+				                        int opEsp = leer.nextInt();
+				                        leer.nextLine();
+
+				                        if (opEsp == 1) {
+				                            System.out.println("Introduzca la especialidad a añadir:");
+				                            String espAdd = leer.nextLine().trim().toUpperCase();
+				                            String res = artServ.agregarEspecialidad(persona_idMod, espAdd);
+				                            System.out.println(res == null ? "Añadida correctamente." : res);
+
+				                        } else if (opEsp == 2) {
+				                            System.out.println("Introduzca la especialidad a eliminar:");
+				                            String espRem = leer.nextLine().trim().toUpperCase();
+				                            String res = artServ.eliminarEspecialidad(persona_idMod, espRem);
+				                            System.out.println(res == null ? "Eliminada correctamente." : res);
+
+				                        } else {
+				                            System.out.println("Opción inválida.");
+				                        }
+				                        break;
+
+				                    case 3:
+				                        finModArt = true;
+				                        break;
+
+				                    default:
+				                        System.out.println("Opción inválida.");
+				                    }
+				                }
+				            }
+				            break;
+
+				        case 3:
+				            finModificacion = true;
+				            break;
+
+				        default:
+				            System.out.println("Opción inválida.");
+				        }
+
+				    } while (!finModificacion);
+
+				    break;
+				    
+				case 5: sesiServ.cerrarSesion(sesion);
+						break;
+						
+				case 6: 
+						String confirmacion = "";
+						leer = new Scanner(System.in);
+						do {
+							System.out.println("¿Está seguro que desea salir? (S/N)");
+							confirmacion = leer.nextLine().toUpperCase().trim();
+						} while (!confirmacion.equals("S") || !confirmacion.equals("N"));
+						if (confirmacion.equals("S")) {
+							System.out.println("Adios!!");
+							confirmarSalida = true;
+						}
 				break;
+					}
 				}
 			
-			case "COORDINACION": System.out.println("Eres coord");
+			case COORDINACION: System.out.println("Eres coord");
 				break;
 			
-			case "ARTISTA": System.out.println("Eres artista");
+			case ARTISTA: System.out.println("Eres artista");
 				break;
 
 			}

@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import entidades.Coordinacion;
+
 public class CoordinadorDAO {
 
     private Connection conex;
@@ -43,5 +45,124 @@ public class CoordinadorDAO {
         }
         return coordinador_id;
     }
-}
+    
+    public Coordinacion obtenerCoordinacionPorPersonaId(long personaId) {
+        Coordinacion c = null;
+        String consulta = "SELECT persona_id, coordinacion_id, es_senior, fecha_senior FROM coordinacion WHERE persona_id = ?";
+        try {
+            p = conex.prepareStatement(consulta);
+            p.setLong(1, personaId);
+            rs = p.executeQuery();
+            if (rs.next()) {
+                c = new Coordinacion();
+                c.setIdCoord(rs.getLong("coordinacion_id"));
+                c.setSenior(rs.getBoolean("es_senior"));
+                java.sql.Date fd = rs.getDate("fecha_senior");
+                if (fd != null) c.setFechasenior(fd.toLocalDate());
+                c.setId(rs.getLong("persona_id"));
+            }
+            rs.close();
+            p.close();
+        } catch (SQLException e) { }
+        return c;
+    }
 
+    public java.util.Map<Long,String> getEspectaculosPorCoordinador(long personaId) {
+        java.util.Map<Long,String> mapa = new java.util.HashMap<>();
+        String consulta = "SELECT espectaculo_id, nombre FROM espectaculo WHERE coordinador_id = ?";
+        try {
+            p = conex.prepareStatement(consulta);
+            p.setLong(1, personaId);
+            rs = p.executeQuery();
+            while (rs.next()) {
+                mapa.put(rs.getLong("espectaculo_id"), rs.getString("nombre"));
+            }
+            rs.close();
+            p.close();
+        } catch (SQLException e) {
+        	
+        }
+        return mapa;
+    }
+
+    public boolean asignarCoordinadorAEspectaculo(long espectaculoId, long personaId) {
+        boolean ok = false;
+        String update = "UPDATE espectaculo SET coordinador_id = ? WHERE espectaculo_id = ?";
+        try {
+            p = conex.prepareStatement(update);
+            p.setLong(1, personaId);
+            p.setLong(2, espectaculoId);
+            int filas = p.executeUpdate();
+            ok = filas > 0;
+            p.close();
+        } catch (SQLException e) {
+        	ok = false;
+        }
+        return ok;
+    }
+
+    public boolean quitarCoordinadorDeEspectaculo(long espectaculoId) {
+        boolean ok = false;
+        String update = "UPDATE espectaculo SET coordinador_id = NULL WHERE espectaculo_id = ?";
+        try {
+            p = conex.prepareStatement(update);
+            p.setLong(1, espectaculoId);
+            int filas = p.executeUpdate();
+            ok = filas > 0;
+            p.close();
+        } catch (SQLException e) {
+        	ok = false;
+        }
+        return ok;
+    }
+
+    public boolean updateSenior(long personaId, boolean esSenior) {
+        boolean ok = false;
+        String update = "UPDATE coordinacion SET es_senior = ? WHERE persona_id = ?";
+        try {
+            p = conex.prepareStatement(update);
+            p.setBoolean(1, esSenior);
+            p.setLong(2, personaId);
+            int filas = p.executeUpdate();
+            ok = filas > 0;
+            p.close();
+        } catch (SQLException e) {
+        	ok = false;
+        }
+        return ok;
+    }
+
+    public boolean updateFechaSenior(long personaId, java.time.LocalDate fecha) {
+        boolean ok = false;
+        String update = "UPDATE coordinacion SET fecha_senior = ? WHERE persona_id = ?";
+        try {
+            p = conex.prepareStatement(update);
+            if (fecha != null) p.setObject(1, fecha);
+            else p.setNull(1, java.sql.Types.DATE);
+            p.setLong(2, personaId);
+            int filas = p.executeUpdate();
+            ok = filas > 0;
+            p.close();
+        } catch (SQLException e) {
+        	ok = false;
+        }
+        return ok;
+    }
+
+    public java.util.Map<Long,String> obtenerListaEspectaculosBasica() {
+        java.util.Map<Long,String> mapa = new java.util.HashMap<>();
+        String consulta = "SELECT espectaculo_id, nombre FROM espectaculo";
+        try {
+            p = conex.prepareStatement(consulta);
+            rs = p.executeQuery();
+            while (rs.next()) {
+                mapa.put(rs.getLong("espectaculo_id"), rs.getString("nombre"));
+            }
+            rs.close();
+            p.close();
+        } catch (SQLException e) {
+        	
+        }
+        return mapa;
+    }
+}

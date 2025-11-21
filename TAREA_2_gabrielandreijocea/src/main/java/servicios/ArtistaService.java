@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import dao.ArtistaDAO;
+import entidades.Artista;
+import entidades.Especialidades;
 
 public class ArtistaService {
 
@@ -43,6 +45,48 @@ public class ArtistaService {
 		}
 		
 		return ret;
+	}
+	
+	public Artista obtenerArtistaPorPersona(long personaId) {
+	    return artDAO.obtenerArtistaPorPersonaId(personaId);
+	}
+
+	public java.util.Set<String> listarEspecialidades(long personaId) {
+	    return artDAO.obtenerEspecialidadesPorArtista(personaId);
+	}
+
+	public String agregarEspecialidad(long personaId, String especialidad) {
+	    if (especialidad == null || especialidad.trim().isEmpty()) {
+	        return "Especialidad vacía.";
+	    }
+	    try {
+	        Especialidades.valueOf(especialidad.toUpperCase());
+	    } catch (Exception ex) {
+	        return "Especialidad no válida.";
+	    }
+	    boolean ok = artDAO.insertarArtistaEspecialidad(personaId, especialidad.toUpperCase());
+	    return ok ? null : "No se pudo añadir la especialidad";
+	}
+
+	public String eliminarEspecialidad(long personaId, String especialidad) {
+	    if (especialidad == null || especialidad.trim().isEmpty()) {
+	        return "Especialidad vacía.";
+	    }
+	    try {
+	        Especialidades.valueOf(especialidad.toUpperCase());
+	    } catch (Exception ex) {
+	        return "Especialidad no válida.";
+	    }
+	    boolean ok = artDAO.eliminarEspecialidadPorNombre(personaId, especialidad.toUpperCase());
+	    return ok ? null : "No se pudo eliminar la especialidad (quizá no existe).";
+	}
+
+	public String modificarApodo(long personaId, String nuevoApodo) {
+	    if (nuevoApodo == null || nuevoApodo.trim().isEmpty()) {
+	        return "El apodo no puede estar vacío.";
+	    }
+	    boolean ok = artDAO.actualizarApodo(personaId, nuevoApodo);
+	    return ok ? null : "Error actualizando apodo.";
 	}
     
     

@@ -2,6 +2,7 @@ package servicios;
 
 import dao.CredencialesDAO;
 import dao.PersonaDAO;
+import entidades.Perfiles;
 import entidades.Sesion;
 import utilidades.Propiedades;
 
@@ -10,18 +11,18 @@ public class SesionService {
 	PersonaDAO perdao = new PersonaDAO();
 	CredencialesDAO credao = new CredencialesDAO();
 	
-	public boolean iniciarSesion(String usuario, String contrasenia) {
+	public boolean iniciarSesion(String usuario, String contrasenia, Sesion sesion) {
 		boolean ok = false;
 		
 		if (usuario.equals(Propiedades.get("usuarioAdmin")) && contrasenia.equals(Propiedades.get("passwordAdmin"))) {
-			Sesion.setNombre("Administrador");
-			Sesion.setPerfil("ADMIN");
+			sesion.setNombre("Administrador");
+			sesion.setPerfil(Perfiles.ADMIN);
 		} else {
 			String nombrePersona = perdao.getNombrePersona(usuario, contrasenia);
-			Sesion.setNombre(nombrePersona);
+			sesion.setNombre(nombrePersona);
 			
 			String perfil = credao.getPerfil(usuario, contrasenia);
-			Sesion.setPerfil(perfil);
+			sesion.setPerfil(Perfiles.valueOf(perfil));
 			
 			ok=true;
 		}
@@ -29,5 +30,13 @@ public class SesionService {
 		return ok;
 	}
 	
-	//public boolean asignar
+	public boolean cerrarSesion(Sesion sesion) {
+		boolean ok = false;
+		
+		sesion.setNombre("Invitado");
+		sesion.setPerfil(Perfiles.INVITADO);
+		
+		ok = true;
+		return ok;
+	}
 }

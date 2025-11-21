@@ -2,40 +2,31 @@ package entidades;
 
 public class Sesion {
 	
-	private static String nombre ="Invitado";
-	private static String perfil = "INVITADO";
-	private static Long idPersona = null;
+	private String nombre; 
+	private Perfiles perfil;
 	
 	public Sesion() {
 		
 	}
 
-	public Sesion(String nombre, String perfil) {
-		Sesion.nombre = nombre;
-		Sesion.perfil = perfil;
+	public Sesion(String nombre, Perfiles perfil) {
+		this.nombre ="Invitado";
+		this.perfil = Perfiles.INVITADO;
 	}
 
-	public static String getNombre() {
+	public String getNombre() {
 		return nombre;
 	}
 
-	public static void setNombre(String nombre) {
-		Sesion.nombre = nombre;
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
 	}
 
-	public static String getPerfil() {
+	public Perfiles getPerfil() {
 		return perfil;
 	}
 
-	public static void setPerfil(String perfil) {
-		Sesion.perfil = perfil;
-	}
-	
-	public static Long getIdPersona() {
-		return idPersona;
-	}
-
-	public static void setIdPersona(Long idPersona) {
-		Sesion.idPersona = idPersona;
+	public void setPerfil(Perfiles perfil) {
+		this.perfil = perfil;
 	}
 }

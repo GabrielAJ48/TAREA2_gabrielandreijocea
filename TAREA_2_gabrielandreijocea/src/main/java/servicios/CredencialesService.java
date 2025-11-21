@@ -1,6 +1,7 @@
 package servicios;
 
 import dao.CredencialesDAO;
+import entidades.Perfiles;
 import utilidades.Propiedades;
 
 public class CredencialesService {
@@ -9,6 +10,10 @@ public class CredencialesService {
 	
 	public String tomarPerfil(String usuario, String contrasenia) {
 		return cred_dao.getPerfil(usuario, contrasenia);
+	}
+	
+	public Perfiles tomarPerfil(long persona_idMod) {
+		return Perfiles.valueOf(cred_dao.getPerfil(persona_idMod));
 	}
 	
 	public boolean validarCredencialesLogin(String nombreUsuario, String contrasenia) {
