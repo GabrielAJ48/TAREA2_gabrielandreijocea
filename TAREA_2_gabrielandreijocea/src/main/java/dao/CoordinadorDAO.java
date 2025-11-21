@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import entidades.Coordinacion;
 
@@ -165,4 +167,48 @@ public class CoordinadorDAO {
         }
         return mapa;
     }
+
+	public long obtenerIdCoord(long persona_id) {
+	long coord_id = -1;
+		
+		String consulta = "SELECT coordinacion_id FROM coordinacion WHERE persona_id = ?";
+		
+		try {
+			p = conex.prepareStatement(consulta);
+			
+			p.setLong(1, persona_id);
+			
+			rs = p.executeQuery();
+			if (rs.next()) {
+				coord_id = rs.getLong("coordinacion_id");
+			}
+			rs.close();
+			p.close();
+		} catch (SQLException e) {
+			
+		}
+		return coord_id;
+	}
+	
+	public Map<Long, String> listaCoordinadores() {
+		Map<Long, String> listaCoord = new HashMap<>();
+		
+		String consulta = "SELECT c.coordinacion_id, p.nombre " + 
+                			"FROM coordinacion c " + 
+                			"INNER JOIN persona p ON c.persona_id = p.persona_id";
+		
+		try {
+			p = conex.prepareStatement(consulta);
+			rs = p.executeQuery();
+			
+			while (rs.next()) {
+				listaCoord.put(rs.getLong("coordinacion_id"), rs.getString("nombre"));
+			}
+		} catch (SQLException e) {
+			
+		}
+		
+		return listaCoord;
+	}
+	
 }

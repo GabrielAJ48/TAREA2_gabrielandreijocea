@@ -24,6 +24,9 @@ public class SesionService {
 			String perfil = credao.getPerfil(usuario, contrasenia);
 			sesion.setPerfil(Perfiles.valueOf(perfil));
 			
+			long persona_id = credao.getPersonaId(usuario);
+			sesion.setPersona_id(persona_id);
+			
 			ok=true;
 		}
 		

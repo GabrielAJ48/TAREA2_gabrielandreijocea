@@ -4,12 +4,9 @@ public class Sesion {
 	
 	private String nombre; 
 	private Perfiles perfil;
+	private long persona_id;
 	
 	public Sesion() {
-		
-	}
-
-	public Sesion(String nombre, Perfiles perfil) {
 		this.nombre ="Invitado";
 		this.perfil = Perfiles.INVITADO;
 	}
@@ -28,5 +25,13 @@ public class Sesion {
 
 	public void setPerfil(Perfiles perfil) {
 		this.perfil = perfil;
+	}
+
+	public long getPersona_id() {
+		return persona_id;
+	}
+
+	public void setPersona_id(long persona_id) {
+		this.persona_id = persona_id;
 	}
 }

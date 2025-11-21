@@ -62,4 +62,12 @@ public class CoordinadorService {
 
         return null;
     }
+    
+    public long obtenerIdCoord(long persona_id) {
+    	return coordDAO.obtenerIdCoord(persona_id);
+    }
+
+	public Map<Long, String> obtenerListaCoordinadores() {
+		return coordDAO.listaCoordinadores();
+	}
 }

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 import entidades.Artista;
 
@@ -163,5 +164,25 @@ public class ArtistaDAO {
         	ok = false; 
         }
         return ok;
+    }
+    
+    public Map<Long, String> obtenerListaArtistas() {
+        java.util.Map<Long, String> mapa = new java.util.HashMap<>();
+        String sql = "SELECT a.artista_id, p.nombre, a.apodo "+
+                     "FROM artista a JOIN persona p ON a.persona_id = p.persona_id";
+        try {
+            p = conex.prepareStatement(sql);
+            rs = p.executeQuery();
+            while(rs.next()){
+                String nombre = rs.getString("nombre");
+                if(rs.getString("apodo") != null) nombre += " (" + rs.getString("apodo") + ")";
+                mapa.put(rs.getLong("artista_id"), nombre);
+            }
+            rs.close();
+            p.close();
+        } catch (SQLException e) {
+
+        }
+        return mapa;
     }
 }

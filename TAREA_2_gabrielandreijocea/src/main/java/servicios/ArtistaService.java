@@ -2,6 +2,7 @@ package servicios;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import dao.ArtistaDAO;
@@ -89,5 +90,8 @@ public class ArtistaService {
 	    return ok ? null : "Error actualizando apodo.";
 	}
     
+	public Map<Long, String> listarArtistasParaSeleccion() {
+        return artDAO.obtenerListaArtistas(); 
+    }
     
 }

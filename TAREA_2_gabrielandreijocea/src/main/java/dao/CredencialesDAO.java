@@ -146,5 +146,27 @@ public class CredencialesDAO {
 		}
 		return perfil;
 	}
+
+	public long getPersonaId(String usuario) {
+		long persona_id = -1;
+		
+		String consulta = "SELECT persona_id FROM credenciales WHERE nombre_usuario = ?";
+		
+		try {
+			p = conex.prepareStatement(consulta);
+			
+			p.setString(1, usuario);
+			
+			rs = p.executeQuery();
+			if (rs.next()) {
+				persona_id = rs.getLong("persona_id");
+			}
+			rs.close();
+			p.close();
+		} catch (SQLException e) {
+			
+		}
+		return persona_id;
+	}
 	
 }

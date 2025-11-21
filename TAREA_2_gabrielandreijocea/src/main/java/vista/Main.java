@@ -2,23 +2,15 @@ package vista;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-
 import entidades.*;
-import servicios.ArtistaService;
-import servicios.CoordinadorService;
-import servicios.CredencialesService;
-import servicios.EspectaculoService;
-import servicios.PersonaService;
-import servicios.SesionService;
-import utilidades.GestorNacionalidades;
-import utilidades.Propiedades;
+import servicios.*;
+import utilidades.*;
 
 public class Main {
 
@@ -93,10 +85,11 @@ public class Main {
 				case 3:
 					String confirmacion = "";
 					leer = new Scanner(System.in);
-				do {
-					System.out.println("¿Está seguro que desea salir? (S/N)");
-					confirmacion = leer.nextLine().toUpperCase().trim();
-				} while (!confirmacion.equals("S") || !confirmacion.equals("N"));
+					do {
+						System.out.println("¿Está seguro que desea salir? (S/N)");
+						confirmacion = leer.nextLine().toUpperCase().trim();
+					} while (confirmacion.equals("S") && confirmacion.equals("N"));
+					
 					if (confirmacion.equals("S")) {
 						System.out.println("Adios!!");
 						confirmarSalida = true;
@@ -113,10 +106,11 @@ public class Main {
 				System.out.println("Escoja una opción:");
 				System.out.println("1. Ver espectáculos completos");
 				System.out.println("2. Crear nuevo espectáculo");
-				System.out.println("3. Registrar persona");
-				System.out.println("4. Modificar datos de personas");
-				System.out.println("5. Cerrar sesión");
-				System.out.println("6. Salir");
+				System.out.println("3. Modificar datos de espectáculo");
+				System.out.println("4. Registrar persona");
+				System.out.println("5. Modificar datos de personas");
+				System.out.println("6. Cerrar sesión");
+				System.out.println("7. Salir");
 				leer = new Scanner(System.in);
 				try {
 					leer = new Scanner(System.in);
@@ -128,9 +122,149 @@ public class Main {
 
 				switch (op) {
 				
-				case 1:
+				case 1: 
+						break;
 					
-				case 2: 
+				case 2:
+				    System.out.println("CREAR NUEVO ESPECTÁCULO");
+				    leer = new Scanner(System.in);
+
+				    String nombreEsp = "", fIni = "", fFin = "";
+				    boolean fechasOk = false;
+				    
+				    while (!fechasOk) {
+				        System.out.println("Nombre del espectáculo:");
+				        nombreEsp = leer.nextLine();
+				        System.out.println("Fecha Inicio (dd/MM/yyyy):");
+				        fIni = leer.nextLine();
+				        System.out.println("Fecha Fin (dd/MM/yyyy):");
+				        fFin = leer.nextLine();
+
+				        if (espServ.comprobarFechasEspectaculo(fIni, fFin) && espServ.comprobarNombreEspectaculo(nombreEsp)) {
+				            fechasOk = true;
+				        } else {
+				            System.out.println("Datos incorrectos. Inténtelo de nuevo.");
+				        }
+				    }
+				    
+				    Espectaculo nuevoEsp = new Espectaculo();
+				    nuevoEsp.setNombre(nombreEsp);
+				    nuevoEsp.setFechaInicio(LocalDate.parse(fIni, DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+				    nuevoEsp.setFechaFin(LocalDate.parse(fFin, DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+				    long idCoordSel = -1;
+				    boolean coordValido = false;
+				    
+				    Map<Long, String> coords = coordServ.obtenerListaCoordinadores();
+				    System.out.println("--- Coordinadores Disponibles ---");
+				    coords.forEach((id, nom) -> System.out.println("ID: " + id + " | " + nom));
+
+				    while (!coordValido) {
+				        System.out.println("Introduzca el ID de Coordinación:");
+				        try {
+				            idCoordSel = leer.nextLong();
+				            leer.nextLine();
+
+				            if (coords.containsKey(idCoordSel)) {
+				                coordValido = true;
+				                nuevoEsp.setIdCoord(idCoordSel);
+				            } else {
+				                System.out.println("El ID introducido no corresponde a un coordinador de la lista.");
+				            }
+				        } catch (InputMismatchException e) {
+				            System.out.println("Debe introducir un número.");
+				            leer.nextLine();
+				        }
+				    }
+
+				    List<Numero> listaNumeros = new java.util.ArrayList<>();
+				    boolean terminarNumeros = false;
+				    int orden = 1;
+				    
+				    Map<Long, String> mapArtistas = artServ.listarArtistasParaSeleccion();
+
+				    while (!terminarNumeros) {
+				        System.out.println("\n--- Añadiendo Número (Orden " + orden + ") ---");
+				        Numero num = new Numero();
+				        num.setOrden(orden);
+				        
+				        boolean datosNumOk = false;
+				        while (!datosNumOk) {
+				            System.out.println("Nombre del número:");
+				            String nomNum = leer.nextLine();
+				            System.out.println("Duración (minutos, ej: 5,5):");
+				            double durNum = 0;
+				            try {
+				                durNum = leer.nextDouble();
+				                leer.nextLine();
+				            } catch (InputMismatchException e) {
+				                leer.nextLine();
+				            }
+
+				            String errorNum = espServ.validarDatosNumero(nomNum, durNum);
+				            if (errorNum == null) {
+				                num.setNombre(nomNum);
+				                num.setDuracion(durNum);
+				                datosNumOk = true;
+				            } else {
+				                System.out.println("Error: " + errorNum);
+				            }
+				        }
+
+				        System.out.println("--- Artistas Disponibles ---");
+				        mapArtistas.forEach((id, nom) -> System.out.println("ID: " + id + " - " + nom));
+				        
+				        Set<Artista> artistasSet = new HashSet<>();
+				        boolean finArtistas = false;
+				        
+				        while (!finArtistas) {
+				            System.out.println("Introduzca ID del Artista (0 para terminar selección):");
+				            long idArt = -1;
+				            try {
+				                idArt = leer.nextLong();
+				                leer.nextLine();
+				            } catch (Exception e) { leer.nextLine(); }
+
+				            if (idArt == 0) {
+				                if (artistasSet.isEmpty()) {
+				                    System.out.println("Debe asignar al menos un artista.");
+				                } else {
+				                    finArtistas = true;
+				                }
+				            } else {
+				                if (mapArtistas.containsKey(idArt)) {
+				                    Artista a = new Artista();
+				                    a.setIdArt(idArt);
+				                    artistasSet.add(a);
+				                    System.out.println("Artista añadido al número.");
+				                } else {
+				                    System.out.println("Artista no encontrado.");
+				                }
+				            }
+				        }
+				        num.setArtistas(artistasSet);
+				        listaNumeros.add(num);
+				        orden++;
+
+				        if (listaNumeros.size() >= 3) {
+				            System.out.println("¿Desea añadir otro número? (S/N)");
+				            String resp = leer.nextLine().trim().toUpperCase();
+				            if (resp.equals("N")) {
+				                terminarNumeros = true;
+				            }
+				        } else {
+				            System.out.println("Lleva " + listaNumeros.size() + " números. Necesita mínimo 3.");
+				        }
+				    }
+
+				    String resultadoRegistro = espServ.registrarEspectaculoCompleto(nuevoEsp, listaNumeros);
+				    
+				    if (resultadoRegistro == null) {
+				        System.out.println("¡Espectáculo registrado correctamente en la Base de Datos!");
+				    } else {
+				        System.out.println("Hubo un error al registrar: " + resultadoRegistro);
+				    }
+				    break;
 					
 				case 3: String nombre = "";
 						String email = "";
@@ -200,7 +334,6 @@ public class Main {
 
 					    } while (tipo != 1 && tipo != 2);
 					    
-					    //COORDINACION
 					    if (tipo == 1) {
 					    	credServ.insertarPerfil("COORDINACION", credencial_id);
 					        boolean esSenior = false;
@@ -242,7 +375,6 @@ public class Main {
 					        }
 					    }
 					    
-					    //ARTISTA
 					    if (tipo == 2) {
 					    	credServ.insertarPerfil("ARTISTA", credencial_id);
 					        String resp = "";
@@ -545,10 +677,179 @@ public class Main {
 
 				    break;
 				    
-				case 5: sesiServ.cerrarSesion(sesion);
+				case 5:
+					System.out.println("MODIFICAR ESPECTÁCULO");
+		            Map<Long, String> todosEspectaculos = coordServ.obtenerTodosEspectaculos(); 
+	
+		            if (todosEspectaculos.isEmpty()) {
+		                System.out.println("No hay espectáculos registrados en el sistema.");
+		                break;
+		            }
+	
+		            System.out.println("--- Lista de Espectáculos ---");
+		            todosEspectaculos.forEach((idE, nom) -> System.out.println("ID: " + idE + " | " + nom));
+	
+		            System.out.println("Introduzca el ID del espectáculo que desea gestionar:");
+		            long idMod = -1; 
+		            try {
+		                idMod = leer.nextLong();
+		                leer.nextLine();
+		            } catch (Exception e) {
+		                leer.nextLine();
+		                System.out.println("Entrada inválida. Debe ser un número.");
+		                break;
+		            }
+	
+		            if (!todosEspectaculos.containsKey(idMod)) {
+		                System.out.println("El ID introducido no corresponde a ningún espectáculo registrado.");
+		                break;
+		            }
+	
+		            System.out.println("¿Qué desea gestionar de este espectáculo?");
+		            System.out.println("1. Datos Generales (Nombre/Fechas)");
+		            System.out.println("2. Números y Artistas");
+		            
+		            int subOp = 0;
+		            try {
+		                subOp = leer.nextInt();
+		                leer.nextLine();
+		            } catch (Exception e) { leer.nextLine(); }
+	
+		            switch (subOp) {
+		                case 1: 
+		                    Espectaculo espToMod = espServ.obtenerDetalleEspectaculo(idMod);
+		                    if (espToMod != null) {
+		                         System.out.println("Nombre actual [" + espToMod.getNombre() + "]. Nuevo nombre (Enter para saltar):");
+		                         String newNom = leer.nextLine().trim();
+		                         if (!newNom.isEmpty()) espToMod.setNombre(newNom);
+	
+		                         String resUpdate = espServ.modificarEspectaculo(espToMod);
+		                         System.out.println(resUpdate == null ? "Datos generales actualizados." : "Error: " + resUpdate);
+		                    }
+		                    break;
+	
+		                case 2:
+		                    Set<Numero> numeros = espServ.obtenerNumerosDeEspectaculo(idMod);
+		                    
+		                    if (numeros.isEmpty()) {
+		                        System.out.println("Este espectáculo no tiene números registrados.");
+		                        break;
+		                    }
+	
+		                    System.out.println("--- Lista de Números ---");
+		                    numeros.forEach(n -> System.out.println("ID: " + n.getId() + " | Orden: " + n.getOrden() + " | " + n.getNombre()));
+	
+		                    System.out.println("Introduzca el ID del NÚMERO a gestionar:");
+		                    long idNumMod = -1;
+		                    try {
+		                        idNumMod = leer.nextLong();
+		                        leer.nextLine();
+		                    } catch (Exception e) { leer.nextLine(); }
+	
+		                    long finalIdNum = idNumMod;
+		                    Numero numSeleccionado = null;
+		                    for (Numero n : numeros) {
+		                        if (n.getId() == idNumMod) {
+		                            numSeleccionado = n;
+		                            break;
+		                        }
+		                    }
+	
+		                    if (numSeleccionado != null) {
+		                        System.out.println("=== Gestionando Número: " + numSeleccionado.getNombre() + " ===");
+		                        System.out.println("1. Editar Nombre/Duración");
+		                        System.out.println("2. Gestionar Artistas (Añadir/Quitar)");
+		                        System.out.println("3. Volver");
+		                        
+		                        int opNum = 0;
+		                        try {
+		                            opNum = leer.nextInt();
+		                            leer.nextLine();
+		                        } catch (Exception e) { leer.nextLine(); }
+		                        
+		                        switch(opNum) {
+		                            case 1:
+		                                System.out.println("Deje vacío para mantener valor.");
+		                                System.out.println("Nuevo Nombre:");
+		                                String nn = leer.nextLine().trim();
+		                                if (!nn.isEmpty()) numSeleccionado.setNombre(nn);
+	
+		                                System.out.println("Nueva Duración actual [" + numSeleccionado.getDuracion() + "]:");
+		                                String durStr = leer.nextLine().trim();
+		                                if (!durStr.isEmpty()) {
+		                                    try {
+		                                        double nd = Double.parseDouble(durStr);
+		                                        numSeleccionado.setDuracion(nd);
+		                                    } catch (NumberFormatException e) { 
+		                                    	System.out.println("Formato incorrecto.");
+		                                    }
+		                                }
+		                                String resNum = espServ.modificarNumero(numSeleccionado);
+		                                System.out.println(resNum == null ? "Datos actualizados." : resNum);
+		                                break;
+	
+		                            case 2:
+		                                boolean finArt = false;
+		                                while(!finArt) {
+		                                    Set<Artista> artsAsignados = espServ.obtenerArtistasDelNumero(finalIdNum);
+		                                    System.out.println("-- Artistas participando actualmente --");
+		                                    if (artsAsignados.isEmpty()) {
+		                                    	System.out.println("(Ninguno)"); 
+		                                    } else {
+		                                    	artsAsignados.forEach(a -> System.out.println("ID: " + a.getIdArt() + " | " + a.getNombre() + (a.getApodo() != null ? " ("+a.getApodo()+")" : "")));
+		                                    }
+	
+		                                    System.out.println("Escoja una opción:");
+		                                    System.out.println("1. Añadir artista");
+		                                    System.out.println("2. Quitar artista");
+		                                    System.out.println("3. Volver");
+		                                    
+		                                    int opArt = 0;
+		                                    try {
+		                                        opArt = leer.nextInt();
+		                                        leer.nextLine();
+		                                    } catch (Exception e) { leer.nextLine(); }
+		                                    
+		                                    if (opArt == 1) {
+		                                        Map<Long, String> todosArtistas = artServ.listarArtistasParaSeleccion();
+		                                        System.out.println("--- Catálogo de Artistas ---");
+		                                        todosArtistas.forEach((id, nom) -> System.out.println("ID: " + id + " - " + nom));
+		                                        
+		                                        System.out.println("ID del artista a AÑADIR:");
+		                                        long idAdd = leer.nextLong();
+		                                        leer.nextLine();
+		                                        
+		                                        String resAdd = espServ.agregarArtistaANumeroExistente(finalIdNum, idAdd);
+		                                        System.out.println(resAdd == null ? ">> Artista añadido." : ">> Error: " + resAdd);
+		                                        
+		                                    } else if (opArt == 2) {
+		                                        System.out.println("ID del artista a QUITAR (de la lista de participantes):");
+		                                        long idRem = leer.nextLong();
+		                                        leer.nextLine();
+		                                        
+		                                        String resRem = espServ.quitarArtistaDeNumero(finalIdNum, idRem);
+		                                        System.out.println(resRem == null ? ">> Artista eliminado del número." : ">> Error: " + resRem);
+		                                        
+		                                    } else {
+		                                        finArt = true;
+		                                    }
+		                                }
+		                                break;
+		                        }
+		                    } else {
+		                        System.out.println("ID de número no encontrado en este espectáculo.");
+		                    }
+		                    break;
+	
+		                default:
+		                    System.out.println("Opción inválida");
+		            }
+		            break;
+				    
+				case 6: sesiServ.cerrarSesion(sesion);
 						break;
 						
-				case 6: 
+				case 7: 
 						String confirmacion = "";
 						leer = new Scanner(System.in);
 						do {
@@ -559,12 +860,348 @@ public class Main {
 							System.out.println("Adios!!");
 							confirmarSalida = true;
 						}
-				break;
+						break;
 					}
 				}
-			
-			case COORDINACION: System.out.println("Eres coord");
 				break;
+			
+			case COORDINACION: 
+				System.out.println("Escoja una opción:");
+				System.out.println("1. Ver espectáculos completos");
+				System.out.println("2. Crear espectáculo");
+				System.out.println("3. Modificar datos de espectáculo");
+				System.out.println("4. Cerrar sesión");
+				System.out.println("5. Salir");
+				
+				try {
+					leer = new Scanner(System.in);
+					op = leer.nextInt();
+				} catch (InputMismatchException e) {
+					System.out.println("Entrada inválida. Introduzca un número válido.");
+					leer.nextLine();
+					op = -1;
+				}
+				
+				switch (op) {
+		        case 1:
+		            break;
+
+		        case 2:
+		            System.out.println("CREAR NUEVO ESPECTÁCULO");
+
+		            String nombreEsp = "", fIni = "", fFin = "";
+		            boolean fechasOk = false;
+
+		            while (!fechasOk) {
+		                System.out.println("Nombre del espectáculo:");
+		                nombreEsp = leer.nextLine();
+		                System.out.println("Fecha Inicio (dd/MM/yyyy):");
+		                fIni = leer.nextLine();
+		                System.out.println("Fecha Fin (dd/MM/yyyy):");
+		                fFin = leer.nextLine();
+
+		                if (espServ.comprobarFechasEspectaculo(fIni, fFin) && espServ.comprobarNombreEspectaculo(nombreEsp)) {
+		                    fechasOk = true;
+		                } else {
+		                    System.out.println("Datos incorrectos o nombre ya existente. Inténtelo de nuevo.");
+		                }
+		            }
+
+		            Espectaculo nuevoEsp = new Espectaculo();
+		            nuevoEsp.setNombre(nombreEsp);
+		            nuevoEsp.setFechaInicio(LocalDate.parse(fIni, DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+		            nuevoEsp.setFechaFin(LocalDate.parse(fFin, DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+		            long idPersonaLogueada = sesion.getPersona_id();
+		            long idCoordinacion = coordServ.obtenerIdCoord(idPersonaLogueada);
+
+		            if (idCoordinacion == -1) {
+		                System.out.println("Error: No se encuentra tu ficha de coordinador. Contacta al Admin.");
+		                break;
+		            }
+
+		            nuevoEsp.setIdCoord(idCoordinacion);
+		            System.out.println(">> Espectáculo asignado automáticamente a tu perfil.");
+
+		            List<Numero> listaNumeros = new java.util.ArrayList<>();
+		            boolean terminarNumeros = false;
+		            int orden = 1;
+
+		            Map<Long, String> mapArtistas = artServ.listarArtistasParaSeleccion();
+
+		            while (!terminarNumeros) {
+		                System.out.println("\n--- Añadiendo Número (Orden " + orden + ") ---");
+		                Numero num = new Numero();
+		                num.setOrden(orden);
+
+		                boolean datosNumOk = false;
+		                while (!datosNumOk) {
+		                    System.out.println("Nombre del número:");
+		                    String nomNum = leer.nextLine();
+		                    System.out.println("Duración (minutos, ej: 5,5):");
+		                    double durNum = 0;
+		                    try {
+		                        durNum = leer.nextDouble();
+		                        leer.nextLine();
+		                    } catch (InputMismatchException e) {
+		                        leer.nextLine();
+		                    }
+
+		                    String errorNum = espServ.validarDatosNumero(nomNum, durNum);
+		                    if (errorNum == null) {
+		                        num.setNombre(nomNum);
+		                        num.setDuracion(durNum);
+		                        datosNumOk = true;
+		                    } else {
+		                        System.out.println("Error: " + errorNum);
+		                    }
+		                }
+
+		                System.out.println("--- Artistas Disponibles ---");
+		                mapArtistas.forEach((id, nom) -> System.out.println("ID: " + id + " - " + nom));
+
+		                Set<Artista> artistasSet = new HashSet<>();
+		                boolean finArtistas = false;
+
+		                while (!finArtistas) {
+		                    System.out.println("Introduzca ID del Artista (0 para terminar selección):");
+		                    long idArt = -1;
+		                    try {
+		                        idArt = leer.nextLong();
+		                        leer.nextLine();
+		                    } catch (Exception e) {
+		                        leer.nextLine();
+		                    }
+
+		                    if (idArt == 0) {
+		                        if (artistasSet.isEmpty()) {
+		                            System.out.println("Debe asignar al menos un artista.");
+		                        } else {
+		                            finArtistas = true;
+		                        }
+		                    } else {
+		                        if (mapArtistas.containsKey(idArt)) {
+		                            Artista a = new Artista();
+		                            a.setIdArt(idArt);
+		                            artistasSet.add(a);
+		                            System.out.println("Artista añadido.");
+		                        } else {
+		                            System.out.println("ID no encontrado.");
+		                        }
+		                    }
+		                }
+		                num.setArtistas(artistasSet);
+		                listaNumeros.add(num);
+		                orden++;
+
+		                if (listaNumeros.size() >= 3) {
+		                    System.out.println("¿Desea añadir otro número? (S/N)");
+		                    String resp = leer.nextLine().trim().toUpperCase();
+		                    if (resp.equals("N")) terminarNumeros = true;
+		                } else {
+		                    System.out.println("Necesita mínimo 3 números (Lleva " + listaNumeros.size() + ").");
+		                }
+		            }
+
+		            String error = espServ.registrarEspectaculoCompleto(nuevoEsp, listaNumeros);
+		            if (error == null) {
+		                System.out.println("¡Espectáculo creado con éxito!");
+		            } else {
+		                System.out.println("Error al guardar: " + error);
+		            }
+		            break;
+
+		        case 3:
+		            System.out.println("MODIFICAR ESPECTÁCULO");
+		            Map<Long, String> todosEspectaculos = coordServ.obtenerTodosEspectaculos(); 
+
+		            if (todosEspectaculos.isEmpty()) {
+		                System.out.println("No hay espectáculos registrados en el sistema.");
+		                break;
+		            }
+
+		            System.out.println("--- Lista de Espectáculos ---");
+		            todosEspectaculos.forEach((idE, nom) -> System.out.println("ID: " + idE + " | " + nom));
+
+		            System.out.println("Introduzca el ID del espectáculo que desea gestionar:");
+		            long idMod = -1; 
+		            try {
+		                idMod = leer.nextLong();
+		                leer.nextLine();
+		            } catch (Exception e) {
+		                leer.nextLine();
+		                System.out.println("Entrada inválida. Debe ser un número.");
+		                break;
+		            }
+
+		            if (!todosEspectaculos.containsKey(idMod)) {
+		                System.out.println("El ID introducido no corresponde a ningún espectáculo registrado.");
+		                break;
+		            }
+
+		            System.out.println("¿Qué desea gestionar de este espectáculo?");
+		            System.out.println("1. Datos Generales (Nombre/Fechas)");
+		            System.out.println("2. Números y Artistas");
+		            
+		            int subOp = 0;
+		            try {
+		                subOp = leer.nextInt();
+		                leer.nextLine();
+		            } catch (Exception e) { leer.nextLine(); }
+
+		            switch (subOp) {
+		                case 1: 
+		                    Espectaculo espToMod = espServ.obtenerDetalleEspectaculo(idMod);
+		                    if (espToMod != null) {
+		                         System.out.println("Nombre actual [" + espToMod.getNombre() + "]. Nuevo nombre (Enter para saltar):");
+		                         String newNom = leer.nextLine().trim();
+		                         if (!newNom.isEmpty()) espToMod.setNombre(newNom);
+
+		                         String resUpdate = espServ.modificarEspectaculo(espToMod);
+		                         System.out.println(resUpdate == null ? "Datos generales actualizados." : "Error: " + resUpdate);
+		                    }
+		                    break;
+
+		                case 2:
+		                    Set<Numero> numeros = espServ.obtenerNumerosDeEspectaculo(idMod);
+		                    
+		                    if (numeros.isEmpty()) {
+		                        System.out.println("Este espectáculo no tiene números registrados.");
+		                        break;
+		                    }
+
+		                    System.out.println("--- Lista de Números ---");
+		                    numeros.forEach(n -> System.out.println("ID: " + n.getId() + " | Orden: " + n.getOrden() + " | " + n.getNombre()));
+
+		                    System.out.println("Introduzca el ID del NÚMERO a gestionar:");
+		                    long idNumMod = -1;
+		                    try {
+		                        idNumMod = leer.nextLong();
+		                        leer.nextLine();
+		                    } catch (Exception e) { leer.nextLine(); }
+
+		                    long finalIdNum = idNumMod;
+		                    Numero numSeleccionado = null;
+		                    for (Numero n : numeros) {
+		                        if (n.getId() == idNumMod) {
+		                            numSeleccionado = n;
+		                            break;
+		                        }
+		                    }
+
+		                    if (numSeleccionado != null) {
+		                        System.out.println("=== Gestionando Número: " + numSeleccionado.getNombre() + " ===");
+		                        System.out.println("1. Editar Nombre/Duración");
+		                        System.out.println("2. Gestionar Artistas (Añadir/Quitar)");
+		                        System.out.println("3. Volver");
+		                        
+		                        int opNum = 0;
+		                        try {
+		                            opNum = leer.nextInt();
+		                            leer.nextLine();
+		                        } catch (Exception e) { leer.nextLine(); }
+		                        
+		                        switch(opNum) {
+		                            case 1:
+		                                System.out.println("Deje vacío para mantener valor.");
+		                                System.out.println("Nuevo Nombre:");
+		                                String nn = leer.nextLine().trim();
+		                                if (!nn.isEmpty()) numSeleccionado.setNombre(nn);
+
+		                                System.out.println("Nueva Duración actual [" + numSeleccionado.getDuracion() + "]:");
+		                                String durStr = leer.nextLine().trim();
+		                                if (!durStr.isEmpty()) {
+		                                    try {
+		                                        double nd = Double.parseDouble(durStr);
+		                                        numSeleccionado.setDuracion(nd);
+		                                    } catch (NumberFormatException e) { 
+		                                    	System.out.println("Formato incorrecto.");
+		                                    }
+		                                }
+		                                String resNum = espServ.modificarNumero(numSeleccionado);
+		                                System.out.println(resNum == null ? "Datos actualizados." : resNum);
+		                                break;
+
+		                            case 2:
+		                                boolean finArt = false;
+		                                while(!finArt) {
+		                                    Set<Artista> artsAsignados = espServ.obtenerArtistasDelNumero(finalIdNum);
+		                                    System.out.println("-- Artistas participando actualmente --");
+		                                    if (artsAsignados.isEmpty()) {
+		                                    	System.out.println("(Ninguno)"); 
+		                                    } else {
+		                                    	artsAsignados.forEach(a -> System.out.println("ID: " + a.getIdArt() + " | " + a.getNombre() + (a.getApodo() != null ? " ("+a.getApodo()+")" : "")));
+		                                    }
+
+		                                    System.out.println("Escoja una opción:");
+		                                    System.out.println("1. Añadir artista");
+		                                    System.out.println("2. Quitar artista");
+		                                    System.out.println("3. Volver");
+		                                    
+		                                    int opArt = 0;
+		                                    try {
+		                                        opArt = leer.nextInt();
+		                                        leer.nextLine();
+		                                    } catch (Exception e) { leer.nextLine(); }
+		                                    
+		                                    if (opArt == 1) {
+		                                        Map<Long, String> todosArtistas = artServ.listarArtistasParaSeleccion();
+		                                        System.out.println("--- Catálogo de Artistas ---");
+		                                        todosArtistas.forEach((id, nom) -> System.out.println("ID: " + id + " - " + nom));
+		                                        
+		                                        System.out.println("ID del artista a AÑADIR:");
+		                                        long idAdd = leer.nextLong();
+		                                        leer.nextLine();
+		                                        
+		                                        String resAdd = espServ.agregarArtistaANumeroExistente(finalIdNum, idAdd);
+		                                        System.out.println(resAdd == null ? ">> Artista añadido." : ">> Error: " + resAdd);
+		                                        
+		                                    } else if (opArt == 2) {
+		                                        System.out.println("ID del artista a QUITAR (de la lista de participantes):");
+		                                        long idRem = leer.nextLong();
+		                                        leer.nextLine();
+		                                        
+		                                        String resRem = espServ.quitarArtistaDeNumero(finalIdNum, idRem);
+		                                        System.out.println(resRem == null ? ">> Artista eliminado del número." : ">> Error: " + resRem);
+		                                        
+		                                    } else {
+		                                        finArt = true;
+		                                    }
+		                                }
+		                                break;
+		                        }
+		                    } else {
+		                        System.out.println("ID de número no encontrado en este espectáculo.");
+		                    }
+		                    break;
+
+		                default:
+		                    System.out.println("Opción inválida");
+		            }
+		            break;
+
+		        case 4:
+		            sesiServ.cerrarSesion(sesion);
+		            System.out.println("Sesión cerrada.");
+		            break;
+
+		        case 5:
+		            String confirmacion = "";
+		            do {
+		                System.out.println("¿Está seguro que desea salir? (S/N)");
+		                confirmacion = leer.nextLine().toUpperCase().trim();
+		            } while (!confirmacion.equals("S") && !confirmacion.equals("N"));
+
+		            if (confirmacion.equals("S")) {
+		                System.out.println("¡Adiós!");
+		                confirmarSalida = true;
+		            }
+		            break;
+
+		        default:
+		            System.out.println("Opción incorrecta.");
+		    }
+		    break;
 			
 			case ARTISTA: System.out.println("Eres artista");
 				break;
