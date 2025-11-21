@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import entidades.Artista;
@@ -185,4 +186,35 @@ public class ArtistaDAO {
         }
         return mapa;
     }
+
+	public List<String[]> obtenerTrayectoria(long personaId) {
+		List<String[]> trayectoria = new java.util.ArrayList<>();
+	    
+	    String sql = "SELECT e.espectaculo_id, e.nombre AS esp_nombre, n.numero_id, n.nombre AS num_nombre " +
+	                 "FROM artista a " +
+	                 "JOIN numero_artista na ON a.artista_id = na.artista_id " +
+	                 "JOIN numero n ON na.numero_id = n.numero_id " +
+	                 "JOIN espectaculo e ON n.espectaculo_id = e.espectaculo_id " +
+	                 "WHERE a.persona_id = ? " +
+	                 "ORDER BY e.fecha_inicio DESC, n.orden ASC";           
+	    try {
+	        p = conex.prepareStatement(sql);
+	        p.setLong(1, personaId);
+	        rs = p.executeQuery();
+	        
+	        while (rs.next()) {
+	            String[] fila = new String[4];
+	            fila[0] = String.valueOf(rs.getLong("espectaculo_id"));
+	            fila[1] = rs.getString("esp_nombre");
+	            fila[2] = String.valueOf(rs.getLong("numero_id"));
+	            fila[3] = rs.getString("num_nombre");
+	            trayectoria.add(fila);
+	        }
+	        rs.close();
+	        p.close();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return trayectoria;
+	}
 }

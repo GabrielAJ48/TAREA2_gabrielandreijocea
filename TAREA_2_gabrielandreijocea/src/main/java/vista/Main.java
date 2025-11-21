@@ -24,6 +24,7 @@ public class Main {
 		CoordinadorService coordServ = new CoordinadorService();
 		ArtistaService artServ = new ArtistaService();
 		EspectaculoService espServ = new EspectaculoService();
+		NumeroService numServ = new NumeroService();
 
 		boolean confirmarSalida = false;
 		int op = 0;
@@ -182,7 +183,7 @@ public class Main {
 				        for (Numero n : eCompleto.getNumeros()) {
 				            System.out.println("ORDEN " + n.getOrden() + ": \"" + n.getNombre() + "\" (" + n.getDuracion() + " min)");
 				            
-				            Set<Artista> artistasNum = espServ.obtenerArtistasDelNumero(n.getId());
+				            Set<Artista> artistasNum = numServ.obtenerArtistasDelNumero(n.getId());
 				            
 				            System.out.println("   Participantes:");
 				            if (artistasNum.isEmpty()) {
@@ -279,7 +280,7 @@ public class Main {
 				                leer.nextLine();
 				            }
 
-				            String errorNum = espServ.validarDatosNumero(nomNum, durNum);
+				            String errorNum = numServ.validarDatosNumero(nomNum, durNum);
 				            if (errorNum == null) {
 				                num.setNombre(nomNum);
 				                num.setDuracion(durNum);
@@ -880,14 +881,14 @@ public class Main {
 				                                System.out.println("Formato incorrecto.");
 				                            }
 				                        }
-				                        String resNum = espServ.modificarNumero(numSeleccionado);
+				                        String resNum = numServ.modificarNumero(numSeleccionado);
 				                        System.out.println(resNum == null ? "Datos actualizados." : resNum);
 				                        break;
 
 				                    case 2:
 				                        boolean finArt = false;
 				                        while(!finArt) {
-				                            Set<Artista> artsAsignados = espServ.obtenerArtistasDelNumero(numSeleccionado.getId());
+				                            Set<Artista> artsAsignados = numServ.obtenerArtistasDelNumero(numSeleccionado.getId());
 				                            
 				                            System.out.println("-- Artistas participando actualmente --");
 				                            if (artsAsignados.isEmpty()) {
@@ -916,7 +917,7 @@ public class Main {
 				                                long idAdd = leer.nextLong();
 				                                leer.nextLine();
 				                                
-				                                String resAdd = espServ.agregarArtistaANumeroExistente(numSeleccionado.getId(), idAdd);
+				                                String resAdd = numServ.agregarArtistaANumeroExistente(numSeleccionado.getId(), idAdd);
 				                                System.out.println(resAdd == null ? ">> Artista añadido." : ">> Error: " + resAdd);
 				                                
 				                            } else if (opArt == 2) {
@@ -924,7 +925,7 @@ public class Main {
 				                                long idRem = leer.nextLong();
 				                                leer.nextLine();
 				                                
-				                                String resRem = espServ.quitarArtistaDeNumero(numSeleccionado.getId(), idRem);
+				                                String resRem = numServ.quitarArtistaDeNumero(numSeleccionado.getId(), idRem);
 				                                System.out.println(resRem == null ? ">> Artista eliminado del número." : ">> Error: " + resRem);
 				                                
 				                            } else {
@@ -1042,7 +1043,7 @@ public class Main {
 				        for (Numero n : eCompleto.getNumeros()) {
 				            System.out.println("ORDEN " + n.getOrden() + ": \"" + n.getNombre() + "\" (" + n.getDuracion() + " min)");
 				            
-				            Set<Artista> artistasNum = espServ.obtenerArtistasDelNumero(n.getId());
+				            Set<Artista> artistasNum = numServ.obtenerArtistasDelNumero(n.getId());
 				            
 				            System.out.println("   Participantes:");
 				            if (artistasNum.isEmpty()) {
@@ -1124,7 +1125,7 @@ public class Main {
 		                        leer.nextLine();
 		                    }
 
-		                    String errorNum = espServ.validarDatosNumero(nomNum, durNum);
+		                    String errorNum = numServ.validarDatosNumero(nomNum, durNum);
 		                    if (errorNum == null) {
 		                        num.setNombre(nomNum);
 		                        num.setDuracion(durNum);
@@ -1295,14 +1296,14 @@ public class Main {
 		                                    	System.out.println("Formato incorrecto.");
 		                                    }
 		                                }
-		                                String resNum = espServ.modificarNumero(numSeleccionado);
+		                                String resNum = numServ.modificarNumero(numSeleccionado);
 		                                System.out.println(resNum == null ? "Datos actualizados." : resNum);
 		                                break;
 
 		                            case 2:
 		                                boolean finArt = false;
 		                                while(!finArt) {
-		                                    Set<Artista> artsAsignados = espServ.obtenerArtistasDelNumero(finalIdNum);
+		                                    Set<Artista> artsAsignados = numServ.obtenerArtistasDelNumero(finalIdNum);
 		                                    System.out.println("-- Artistas participando actualmente --");
 		                                    if (artsAsignados.isEmpty()) {
 		                                    	System.out.println("(Ninguno)"); 
@@ -1330,7 +1331,7 @@ public class Main {
 		                                        long idAdd = leer.nextLong();
 		                                        leer.nextLine();
 		                                        
-		                                        String resAdd = espServ.agregarArtistaANumeroExistente(finalIdNum, idAdd);
+		                                        String resAdd = numServ.agregarArtistaANumeroExistente(finalIdNum, idAdd);
 		                                        System.out.println(resAdd == null ? ">> Artista añadido." : ">> Error: " + resAdd);
 		                                        
 		                                    } else if (opArt == 2) {
@@ -1338,7 +1339,7 @@ public class Main {
 		                                        long idRem = leer.nextLong();
 		                                        leer.nextLine();
 		                                        
-		                                        String resRem = espServ.quitarArtistaDeNumero(finalIdNum, idRem);
+		                                        String resRem = numServ.quitarArtistaDeNumero(finalIdNum, idRem);
 		                                        System.out.println(resRem == null ? ">> Artista eliminado del número." : ">> Error: " + resRem);
 		                                        
 		                                    } else {
@@ -1458,7 +1459,7 @@ public class Main {
 				        for (Numero n : eCompleto.getNumeros()) {
 				            System.out.println("ORDEN " + n.getOrden() + ": \"" + n.getNombre() + "\" (" + n.getDuracion() + " min)");
 				            
-				            Set<Artista> artistasNum = espServ.obtenerArtistasDelNumero(n.getId());
+				            Set<Artista> artistasNum = numServ.obtenerArtistasDelNumero(n.getId());
 				            
 				            System.out.println("   Participantes:");
 				            if (artistasNum.isEmpty()) {
@@ -1479,7 +1480,50 @@ public class Main {
 				    System.out.println("#################################################");
 				    break;
 				    
-				case 2: 
+				case 2:
+	                long miId = sesion.getPersona_id();
+	                
+	                Persona misDatosPers = perServ.obtenerPersona(miId);
+	                Artista misDatosProf = artServ.obtenerArtistaPorPersona(miId);
+	                Set<String> misEspecialidades = artServ.listarEspecialidades(miId);
+	                List<String[]> miTrayectoria = artServ.obtenerTrayectoria(miId);
+
+	                if (misDatosPers != null && misDatosProf != null) {
+	                    System.out.println("\n#################################################");
+	                    System.out.println("              FICHA DEL ARTISTA");
+	                    System.out.println("#################################################");
+	                    
+	                    System.out.println("--- DATOS PERSONALES ---");
+	                    System.out.println("Nombre:       " + misDatosPers.getNombre());
+	                    System.out.println("Email:        " + misDatosPers.getEmail());
+	                    System.out.println("Nacionalidad: " + GestorNacionalidades.obtenerNombreCompleto(misDatosPers.getNacionalidad()));
+	                    
+	                    System.out.println("\n--- DATOS PROFESIONALES ---");
+	                    String apodo = (misDatosProf.getApodo() != null) ? misDatosProf.getApodo() : "(Sin apodo)";
+	                    System.out.println("Apodo:        " + apodo);
+	                    System.out.println("Especialidades:");
+	                    if (misEspecialidades.isEmpty()) {
+	                        System.out.println("   - Ninguna registrada");
+	                    } else {
+	                        misEspecialidades.forEach(esp -> System.out.println("   - " + esp));
+	                    }
+
+	                    System.out.println("\n--- TRAYECTORIA EN EL CIRCO ---");
+	                    if (miTrayectoria.isEmpty()) {
+	                        System.out.println(" (Aún no has participado en ningún número)");
+	                    } else {
+	                    	System.out.printf("%-5s %-25s %-5s %-25s%n", "ID E.|", "ESPECTÁCULO|", "ID N.|", "NÚMERO");
+	                        System.out.println("------------------------------------------------------");
+	                        
+	                        for (String[] fila : miTrayectoria) {
+	                        	System.out.printf("%-5s %-25s %-5s %-25s%n", fila[0], fila[1], fila[2], fila[3]);
+	                        }
+	                    }
+	                    System.out.println("#################################################\n");
+	                } else {
+	                    System.out.println("Error al recuperar tus datos.");
+	                }
+	                break;
 				    
 				case 3:
 		            sesiServ.cerrarSesion(sesion);
