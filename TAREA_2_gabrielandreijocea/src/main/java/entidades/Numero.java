@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Numero implements Serializable{
+public class Numero implements Serializable, Comparable<Numero>{
 	
 	private static final long serialVersionUID = 1L;
 	private Long id;
@@ -26,6 +26,23 @@ public class Numero implements Serializable{
 		this.artistas = artistas;
 		this.idEspectaculo = idEspectaculo;
 	}
+	
+	@Override
+    public int compareTo(Numero otro) {
+        int resultado = Integer.compare(this.orden, otro.orden);
+        if (resultado == 0) {
+            long myId = (this.id == null) ? 0 : this.id;
+            long otherId = (otro.id == null) ? 0 : otro.id;
+            return Long.compare(myId, otherId);
+        }
+        
+        return resultado;
+    }
+    
+    @Override
+    public String toString() {
+        return "Orden: " + orden + " - " + nombre;
+    }
 
 	public Long getId() {
 		return id;

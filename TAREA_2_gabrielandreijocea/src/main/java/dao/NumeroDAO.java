@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import entidades.Artista;
 import entidades.Numero;
@@ -58,24 +59,28 @@ public class NumeroDAO {
         }
     }
 
-    public Set<Numero> obtenerNumerosPorEspectaculo(long espectaculoId) {
-        Set<Numero> numeros = new HashSet<>();
+    public Set<entidades.Numero> obtenerNumerosPorEspectaculo(long espectaculoId) {
+        Set<entidades.Numero> numeros = new TreeSet<>();
+        
         String sql = "SELECT * FROM numero WHERE espectaculo_id = ? ORDER BY orden ASC";
         
         try {
-        	PreparedStatement p = conex.prepareStatement(sql);
+            p = conex.prepareStatement(sql);
             p.setLong(1, espectaculoId);
-            ResultSet rs = p.executeQuery();
+            rs = p.executeQuery();
+            
             while(rs.next()){
-                Numero n = new Numero();
+                entidades.Numero n = new entidades.Numero();
                 n.setId(rs.getLong("numero_id"));
+                n.setOrden(rs.getInt("orden"));
                 n.setNombre(rs.getString("nombre"));
                 n.setDuracion(rs.getDouble("duracion"));
-                n.setOrden(rs.getInt("orden"));
                 n.setIdEspectaculo(espectaculoId);
+                
                 numeros.add(n);
             }
             rs.close();
+            p.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

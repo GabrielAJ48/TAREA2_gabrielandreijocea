@@ -211,4 +211,30 @@ public class CoordinadorDAO {
 		return listaCoord;
 	}
 	
+	public Coordinacion obtenerDatosCoordinadorCompleto(long coordinacionId) {
+	    Coordinacion coord = new Coordinacion();
+	    
+	    String consulta = "SELECT c.coordinacion_id, c.es_senior, p.nombre, p.email " +
+	                      "FROM coordinacion c " +
+	                      "INNER JOIN persona p ON c.persona_id = p.persona_id " +
+	                      "WHERE c.coordinacion_id = ?";
+	    try {
+	        p = conex.prepareStatement(consulta);
+	        p.setLong(1, coordinacionId);
+	        rs = p.executeQuery();
+	        
+	        if (rs.next()) {
+	            coord.setIdCoord(rs.getLong("coordinacion_id"));
+	            coord.setSenior(rs.getBoolean("es_senior"));
+	            coord.setNombre(rs.getString("nombre"));
+	            coord.setEmail(rs.getString("email"));
+	        }
+	        rs.close();
+	        p.close();
+	    } catch (SQLException e) {
+
+	    }
+	    return coord;
+	}
+	
 }

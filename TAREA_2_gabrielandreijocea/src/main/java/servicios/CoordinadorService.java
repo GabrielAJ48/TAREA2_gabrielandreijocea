@@ -70,4 +70,8 @@ public class CoordinadorService {
 	public Map<Long, String> obtenerListaCoordinadores() {
 		return coordDAO.listaCoordinadores();
 	}
+	
+	public Coordinacion obtenerDatosDelCoordinador(long coordinacionId) {
+	    return coordDAO.obtenerDatosCoordinadorCompleto(coordinacionId);
+	}
 }

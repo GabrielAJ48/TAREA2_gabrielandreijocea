@@ -2,8 +2,8 @@ package entidades;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class Espectaculo implements Serializable{
 
@@ -16,7 +16,7 @@ public class Espectaculo implements Serializable{
 	private LocalDate fechaInicio;
 	private LocalDate fechaFin;
 	private Long idCoord;
-	private Set<Numero> numeros = new HashSet<>();
+	private Set<Numero> numeros = new TreeSet<>();
 	
 	public Espectaculo() {
 		
@@ -77,7 +77,7 @@ public class Espectaculo implements Serializable{
 	}
 
 	public void setNumeros(Set<Numero> numeros) {
-		this.numeros = numeros;
+		this.numeros = new TreeSet<>(numeros);
 	}
 	
 	
